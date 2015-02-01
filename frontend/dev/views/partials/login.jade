@@ -1,0 +1,27 @@
+.col-md-3
+
+.col-xs-12.col-md-6
+    .well
+        form.form-horizontal(name="loginForm")
+            fieldset
+                legend.text-center Login
+                
+                .form-group(data-ng-class="{'has-error': loginForm.email.$invalid && loginForm.email.$dirty, 'has-success': loginForm.email.$valid && loginForm.email.$dirty}")
+                    .input-group
+                        span.input-group-addon: span.fa.fa-fw.fa-envelope
+                        input.form-control(type='text', name='email', placeholder="email", data-ng-model="login.data.email", data-ng-disabled="login.logging", required)
+
+                .form-group(data-ng-class="{'has-error': loginForm.password.$invalid && loginForm.password.$dirty, 'has-success': loginForm.password.$valid && loginForm.password.$dirty}")
+                    .input-group
+                        span.input-group-addon: span.fa.fa-fw.fa-asterisk
+                        input.form-control(type='password', name='password', placeholder="Password", data-ng-model="login.data.password", data-ng-disabled="login.logging", required)
+
+                .form-group.text-center
+                    button.btn.btn-success(type='submit', data-ng-disabled='loginForm.$invalid || login.logging', data-ng-click="login.sendLogin()")
+                            span.fa.fa-circle-o-notch.fa-spin(data-ng-if="login.logging")
+                            span(data-ng-if="!login.logging") Login
+
+                .form-group.text-center
+                    a.text-success(href="#") Recuperar contraseña
+
+.col-md-3

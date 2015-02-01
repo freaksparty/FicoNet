@@ -1,0 +1,1 @@
+export FICONET_ENV=development && npm start
