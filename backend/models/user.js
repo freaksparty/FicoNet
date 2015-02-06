@@ -34,6 +34,15 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
 
+        "place" : { 
+            type      : DataTypes.INTEGER, 
+            allowNull : false, 
+            unique    : true,
+            validate  : {
+                notEmpty : { args: true, msg: consts.VALIDATES.USER.PLACE.NOT_EMPTY },
+            }
+        },
+
         "role" : { 
             type: DataTypes.ENUM("user", "admin", "god"), 
             allowNull    : false, 
@@ -63,15 +72,21 @@ module.exports = function (sequelize, DataTypes) {
            type         : DataTypes.BOOLEAN, 
            allowNull    : false,
            defaultValue : false
+        },
+
+        "newpassword" : {
+            type      : DataTypes.STRING(128), 
+            allowNull : true,
+            unique    : true,
         }
 
     }, {
         classMethods: {
             associate: function (models) { },
-            generateHash: function (password, email) {
+            generateHash: function (password, salt) {
                 //keylen = 64 but return length = 128 because "hex" dup output length
-                return crypto.pbkdf2Sync(password, email, 10, 64).toString("hex");
-            }
+                return crypto.pbkdf2Sync(password, salt, 10, 64).toString("hex");
+            },
         }
     });
 

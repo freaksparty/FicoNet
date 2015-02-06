@@ -20,6 +20,72 @@ module.exports = {
             method      : "get", 
             middlewares : ["auth.isAuthenticated", "auth.hasRoleAdmin"], 
             controller  : "api.users.getUsers" 
+        },
+
+        {
+            method      : "post", 
+            middlewares : ["auth.isAuthenticated", "auth.hasRoleAdmin"], 
+            controller  : "api.users.createUser" 
+        }
+    ],
+
+
+    "/api/users/newpassword" : [
+        { 
+            method      : "post",
+            controller  : "api.users.getNewPasswordHash" 
+        }
+    ],
+
+
+    "/api/users/changepassword/:code([0-9a-fA-F]{128})" : [
+        { 
+            method      : "put",
+            controller  : "api.users.changePasswordWithCode" 
+        }
+    ],
+
+    "/api/users/:user" : [
+        { 
+            method      : "get", 
+            middlewares : ["auth.isAuthenticated", "auth.hasRoleAdmin"], 
+            controller  : "api.users.getUser" 
+        },
+
+        {
+            method      : "put", 
+            middlewares : ["auth.isAuthenticated", "auth.hasRoleAdmin"], 
+            controller  : "api.users.updateUser" 
+        },
+
+        {
+            method      : "delete", 
+            middlewares : ["auth.isAuthenticated", "auth.hasRoleAdmin"], 
+            controller  : "api.users.deleteUser" 
+        }
+    ],
+
+    "/api/users/:user/password" : [
+        { 
+            method      : "put", 
+            middlewares : ["auth.isAuthenticated", "auth.hasRoleAdmin"], 
+            controller  : "api.users.changePassword"
+        },
+    ],
+
+    "/api/users/:user/role" : [
+        { 
+            method      : "put", 
+            middlewares : ["auth.isAuthenticated", "auth.hasRoleGod"], 
+            controller  : "api.users.changeRole"
+        },
+    ],
+
+    "/api/users/:user/delete" : [
+        {
+            method      : "delete", 
+            middlewares : ["auth.isAuthenticated", "auth.hasRoleGod"], 
+            controller  : "api.users.hardDeleteUser" 
         }
     ],
     

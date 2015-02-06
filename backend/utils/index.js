@@ -1,7 +1,9 @@
-var fs     = require("fs"),
-    path   = require("path"),
-    lodash = require("lodash"),
-    consts = require("./consts");
+var fs         = require("fs"),
+    path       = require("path"),
+    lodash     = require("lodash"),
+    nodemailer = require('nodemailer'),
+    mailconfig = require('../config/smtp'),
+    consts     = require("./consts");
 
 module.exports = {
     
@@ -171,10 +173,10 @@ module.exports = {
         return model;
     },
 
-    makeBaseWhere : function (data, hasDeleted) {
+    makeBaseWhere : function (data, deleted) {
         var where = {};
 
-        if(hasDeleted) where.deleted = false;
+        where.deleted = !!deleted;
 
         this.copyObject(data, where);
 
@@ -190,5 +192,35 @@ module.exports = {
                 (options && options.code && options.message) || consts.ERROR.SERVER
             );
         }
+    },
+
+    sendEmail : function (to, subject, body, end) {
+        var transporter, mailOptions, config;
+
+        config = mailconfig.config();
+
+        transporter = nodemailer.createTransport({
+            service : config.service,
+            auth    : {
+                user : config.user,
+                pass : config.password
+            }
+        });
+
+        mailOptions = {
+            from    : config.from,
+            to      : to,
+            subject : subject,
+            html    : body
+        };
+
+        transporter.sendMail(mailOptions, function (err, info) {
+            if(err) {
+                console.log(err);
+                end(500, consts.ERROR.SERVER);
+            } else {
+                end(200, info);
+            }
+        });
     }
 }

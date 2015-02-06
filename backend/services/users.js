@@ -2,29 +2,33 @@ var dbServices = require("./base"),
     db         = require("../models"),
     utils      = require("../utils"),
     consts     = require("../utils/consts"),
-    makePassword, changePassword, ATTRS, model;
+    makePassword, makeHash, changePassword, sendEmail, ATTRS, model;
 
 
-ATTRS = ["id", "username", "password", "email", "role", "created_at", "last_modified"];
+ATTRS = ["id", "username", "password", "email", "place", "role", "created_at", "last_modified"];
 
 model = db.User;
 
 
 makePassword = function (user, end) {
-    tryThrowableFunction(function () { 
-        if(user.password && user.email) {
+    utils.tryThrowableFunction(function () { 
+        if(user.password) {
             user.password = model.generateHash(user.password, user.email);
         }
     }, end); 
-}
+};
 
+makeHash = function (user, end) {
+    utils.tryThrowableFunction(function () { 
+        user.newpassword = model.generateHash(user.email, ""+Math.random());
+    }, end);
+}; 
 
-changePassword = function (user, end) {
-    tryThrowableFunction(function () { 
-        
-    }, end); 
-} 
-
+sendEmail = function (user, end) {
+    utils.tryThrowableFunction(function () { 
+        utils.sendEmail(user.email, "Change Password", user.newpassword, end);
+    }, end);
+};
 
 module.exports = {
     createUser: function (data, done) {
@@ -41,8 +45,10 @@ module.exports = {
             user.last_modified = now;
 
             delete user.role;
+            delete user.id;
+            delete user.newpassword;
 
-            return makePassword(user, cfg.end);
+            return makePassword(user, !!user.password, cfg.end);
         }).onSuccess (function (user, cfg) {
             if(user){
                 return cfg.end(200, { 
@@ -55,7 +61,9 @@ module.exports = {
     },
 
 
-    updateUser : function (id, roleChanged, data, done) {
+    updateUser : function (id, roleChanged, updatePassword, data, done) {
+        var userPass;
+
         dbServices.update({
             model : model, 
             id    : id,
@@ -63,13 +71,27 @@ module.exports = {
             attrs : ATTRS,
             done  : done
         }).config(function (cfg) {
-            cfg.deleted = true;
+            cfg.deleted = false;
         }).onLoad(function (user, cfg) {
-            if(!roleChanged) delete user.role;
+            if(!roleChanged) {
+                delete user.role;
+            } else if(user.role === "god"){
+                return cfg.end(403, consts.ERROR.FORBIDDEN);
+            }
+
+            if(updatePassword) userPass = user.password;
+
+            delete user.id;
+            delete user.password;
+            delete user.created_at;
+            delete user.newpassword;
 
             user.last_modified = new Date();
-
-            return makePassword(user, cfg.end);
+        }).onSearch(function (user, cfg) {
+            if(updatePassword) {
+                user.password = userPass;
+                makePassword(user, cfg.end);
+            }
         }).onSuccess (function (user, cfg) {
             if(user){
                 return cfg.end(200, {
@@ -111,16 +133,75 @@ module.exports = {
         }).exec();
     },
 
+    generateNewPasswordHash : function (email, done) {
+        var userPass;
+
+        dbServices.update({
+            model : model, 
+            field : "email",
+            value : email,
+            obj   : {email : email},
+            attrs : ATTRS,
+            done  : done
+        }).config(function (cfg) {
+            cfg.deleted = false;
+        }).onLoad(function (user, cfg) {
+            delete user.role;
+            delete user.id;
+            delete user.password;
+            delete user.created_at;
+            delete user.username;
+            delete user.newpassword;
+            delete user.email
+
+            user.last_modified = new Date();
+        }).onSearch(function (user, cfg) {
+            makeHash(user, cfg.end);
+        }).onSuccess (function (user, cfg) {
+            if(user){
+                return sendEmail(user, cfg.end);
+            } else {
+                return cfg.end(500, consts.ERROR.UNKNOWN);
+            }
+        }).exec();
+    },
+
+    changePassword : function (code, password, isCode, done) {
+        var field = isCode ? 'newpassword' : 'id';
+
+        dbServices.update({
+            model : model, 
+            field : field,
+            value : code,
+            obj   : { password : password },
+            attrs : ATTRS,
+            done  : done
+        }).config(function (cfg) {
+            cfg.deleted = false;
+        }).onLoad(function (user, cfg) {
+            user.last_modified = new Date();
+        }).onSearch(function (user, cfg) {
+            user.newpassword = null;
+            makePassword(user, cfg.end);
+        }).onSuccess (function (user, cfg) {
+            if(user){
+                return cfg.end(200, "");
+            } else {
+                return cfg.end(500, consts.ERROR.UNKNOWN);
+            }
+        }).exec();
+    },
+
 
     getUsers : function (done) {
-        var attrs = ["id", "username", "email", "role", "created_at", "last_modified"];
+        var attrs = ["id", "username", "email", "place", "role", "created_at", "last_modified"];
 
         dbServices.findAll({
             model : model,
             done  : done
         }).config(function (cfg) {
             cfg.options = {
-                where      : utils.makeBaseWhere({}, true),
+                where      : utils.makeBaseWhere({}, false),
                 attributes : attrs
             }
 
@@ -130,15 +211,14 @@ module.exports = {
 
 
     getUser : function (id, done) {
-        var attrs = ["id", "username", "email", "role", "created_at", "last_modified"];
+        var attrs = ["id", "username", "email", "place", "role", "created_at", "last_modified"];
 
         dbServices.find({
-            model : model, 
-            id    : id,
+            model : model,
             done  : done
         }).config(function (cfg) {
             cfg.options = {
-                where      : utils.makeBaseWhere({id: id}, true),
+                where      : utils.makeBaseWhere({id : id}, false),
                 attributes : attrs
             }
 

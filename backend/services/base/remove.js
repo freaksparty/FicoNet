@@ -15,7 +15,7 @@ module.exports = function (options) {
     service.cbs.runSearch = function () {
         process.nextTick(function () {
             options.model.find({ 
-                where: utils.makeBaseWhere({id: options.id}, true) 
+                where: utils.makeBaseWhere({id: options.id}, false) 
             }).success(function (result) {
                 if(result) {
                     result.deleted = true;

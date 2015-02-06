@@ -17,6 +17,7 @@ var express         = require('express'),
     serverConfig    = require('./config/server'),
     redisConfig     = require('./config/redis'),
     dbConfig        = require('./config/database'),
+    mailConfig      = require('./config/smtp'),
     frontendConfig  = require('./config/frontend'),
     utils           = require('./utils'),
     router, cfg, models, passportConfig, RedisStore, store, rediscfg;
@@ -29,6 +30,7 @@ cfg = utils.reqJSONFile('cfg.json' || undefined);
 
 dbConfig.set(cfg && cfg.db);
 redisConfig.set(cfg && cfg.redis);
+mailConfig.set(cfg && cfg.smtp);
 
 rediscfg = redisConfig.config();
 

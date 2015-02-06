@@ -25,6 +25,13 @@ module.exports = function (options) {
         });
     };
 
+    service.cbs.runSuccess = function (r) {
+        if(cfg.onSuccess) return cfg.onSuccess(r, cfg.data);
+
+        if(r) cfg.data.end(200, r);
+        else  cfg.data.end(404, consts.ERROR.NOT_FOUND);
+    };
+
     service.loadFns();
 
     return service;

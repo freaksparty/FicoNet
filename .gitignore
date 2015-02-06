@@ -33,4 +33,4 @@ monitor/*
 #cfg production
 cfg.json
 
-insertUsers.js
+initScript.js

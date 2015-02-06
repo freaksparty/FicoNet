@@ -24,12 +24,13 @@ module.exports = function (passport) {
         process.nextTick(function () {
             db.User.find({
                 where: {
-                    email : email
+                    email   : email,
+                    deleted : false
                 }
             }, {raw: true}).success(function (user) {
                 console.log("USER: " + user);
                 if (user && user.password && 
-                        user.password === db.User.generateHash(password, user.email)) {
+                        user.password === db.User.generateHash(password, user.email)){
                     return done(null, user);
                 } else {
                     return done(null, false);

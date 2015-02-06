@@ -12,7 +12,8 @@ module.exports = {
         "BAD_REQUEST"     : "Petición mal formalizada",
         "ADMIN_REQ"       : "Necesitas ser admin para realizar esta acción",
         "GOD_REQ"         : "Necesitas ser god para realizar esta acción",
-        "FOREIGN_KEY"     : "La referencia no existe"
+        "FOREIGN_KEY"     : "La referencia no existe",
+        "FORBIDDEN"       : "La acción está prohibida"
     },
 
     "SUCCESS" : {
@@ -38,6 +39,10 @@ module.exports = {
             "EMAIL" : {
                 "NOT_EMPTY" : "El email no puede estar vacío",
                 "IS_EMAIL"  : "Formato de email incorrecto"
+            },
+
+            "PLACE" : {
+                 "NOT_EMPTY" : "La plaza no puede estar vacía",
             },
 
             "ROLE" : {

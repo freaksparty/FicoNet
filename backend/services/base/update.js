@@ -24,15 +24,32 @@ module.exports = function (options) {
     };
 
     service.cbs.runSearch = function () {
+        var filterKey, filterValue, where;
+
+        filterKey   = "id";
+        filterValue = options.id;
+
+        if(!filterValue) {
+            if(options.field) {
+                filterKey   = options.field;
+                filterValue = options.value;
+            }
+        }
+
+        where = {};
+
+        where[filterKey] = filterValue;
+
+
         process.nextTick(function () {
             options.model.find({ 
-                where: utils.makeBaseWhere({id: options.id}, cfg.data.deleted)
+                where: utils.makeBaseWhere(where, cfg.data.deleted)
             }).success(function (result) {
                 if(result) {
                     utils.copyObject(updatedData, result);
                     objToUpdate = result;
 
-                    cfg.onSearch && cfg.onSearch(objToUpdate);
+                    cfg.onSearch && cfg.onSearch(objToUpdate, cfg.data);
 
                     return service.next();
                 } else {
