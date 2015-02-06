@@ -1,0 +1,30 @@
+h1.text-center Usuarios
+
+table.table.table-striped.table-hover.table-responsive.text-center
+    thead
+        tr.active
+            td: a(href="", data-ng-click="orderById()") #
+            td: a(href="", data-ng-click="orderByName()") Nick
+            td: a(href="", data-ng-click="orderByPlace()") Plaza
+            td: a(href="", data-ng-click="orderByRole()") Rol
+            td Modificar
+            td Eliminar
+
+    tbody
+        tr(data-ng-repeat="user in users | orderBy: predicate:reverse")
+            td {{user.id}}
+            td {{user.username}}
+            td {{user.place}}
+            td {{user.role}}
+            td: a(href='#')
+                    span.fa.fa-pencil( 
+                        data-ng-class="{'text-warning': modifyHover}", 
+                        data-ng-mouseenter="modifyHover = true", 
+                        data-ng-mouseleave="modifyHover = false"
+                    )
+            td: a(href='#')
+                    span.fa.fa-remove( 
+                        data-ng-class="{'text-danger': removeHover}", 
+                        data-ng-mouseenter="removeHover = true", 
+                        data-ng-mouseleave="removeHover = false"
+                    )

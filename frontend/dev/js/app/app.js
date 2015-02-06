@@ -6,10 +6,6 @@ FICONET.constant("API_BASE_URI", "api/");
 
 FICONET.config(['$interpolateProvider', '$routeProvider', '$locationProvider',
     function($interpolateProvider, $routeProvider, $locationProvider) {
-        
-        //Interpolate symbols changed because exists conflict with Django templates
-        $interpolateProvider.startSymbol('{[{');
-        $interpolateProvider.endSymbol('}]}');
 
         //Routes
         $routeProvider.when('/', {
@@ -19,6 +15,9 @@ FICONET.config(['$interpolateProvider', '$routeProvider', '$locationProvider',
             controller  : 'LoginCtrl'
         }).when('/admin', {
             templateUrl : 'partials/admin/home'
+        }).when('/admin/users', {
+            templateUrl : 'partials/admin/users',
+            controller  : 'UsersCtrl'
         }).when('/403', {
             templateUrl : 'partials/403'
         }).when('/404', {
