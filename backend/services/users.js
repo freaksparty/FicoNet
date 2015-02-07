@@ -109,6 +109,10 @@ module.exports = {
             model : model, 
             id    : id,
             done  : done
+        }).onSearch(function (user, cfg) {
+            if(user.role === 'god') {
+                return cfg.end(403, consts.ERROR.FORBIDDEN);
+            }
         }).onSuccess (function (user, cfg) {
             if(user){
                 return cfg.end(200, user.id);
@@ -124,6 +128,10 @@ module.exports = {
             model : model, 
             id    : id,
             done  : done
+        }).onSearch(function (user, cfg) {
+            if(user.role === 'god') {
+                return cfg.end(403, consts.ERROR.FORBIDDEN);
+            }
         }).onSuccess (function (user, cfg) {
             if(user){
                 return cfg.end(200, user.id);
