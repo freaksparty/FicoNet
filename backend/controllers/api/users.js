@@ -4,7 +4,7 @@ var utils    = require("../../utils");
 module.exports = {
 
     getUsers : function (req, res) {
-        utils.sendStandardResponse(res, services.users, "getUsers");
+        utils.sendStandardResponse(res, services.users, "getUsers", req.query.deleted);
     },
 
     getUser : function (req, res) {
@@ -24,6 +24,12 @@ module.exports = {
             user = req.body;
 
         utils.sendStandardResponse(res, services.users, "updateUser", id, false, false, user);
+    },
+
+    retrieveDeleteUser : function (req, res) {
+        var id   = req.params['user'];
+
+        utils.sendStandardResponse(res, services.users, "retrieveDeleteUser", id);
     },
 
     deleteUser : function (req, res) {

@@ -20,5 +20,11 @@ html
 
         .container(data-ng-view)
         
+        script(type="text/ng-template", id="pageLoadingError.html")
+            span.text-danger Error cargando datos!!
+
+        script(type="text/ng-template", id="pageLoading.html")
+            span Cargando datos...
+            
         script.
             angular.bootstrap(document, ['FICONET']);

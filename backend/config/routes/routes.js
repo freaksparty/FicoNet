@@ -81,6 +81,14 @@ module.exports = {
         },
     ],
 
+    "/api/users/:user/retrieve" : [
+        { 
+            method      : "put", 
+            middlewares : ["auth.isAuthenticated", "auth.hasRoleAdmin"], 
+            controller  : "api.users.retrieveDeleteUser"
+        },
+    ],
+
     "/api/users/:user/delete" : [
         {
             method      : "delete", 

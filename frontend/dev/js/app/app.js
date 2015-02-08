@@ -8,27 +8,38 @@ FICONET.config(['$interpolateProvider', '$routeProvider', '$locationProvider',
     function($interpolateProvider, $routeProvider, $locationProvider) {
 
         //Routes
-        $routeProvider.when('/', {
-            templateUrl : 'partials/home'
-        }).when('/login', {
-            templateUrl : 'partials/login',
-            controller  : 'LoginCtrl'
-        }).when('/admin', {
-            templateUrl : 'partials/admin/home'
-        }).when('/admin/users', {
-            templateUrl : 'partials/admin/users',
-            controller  : 'UsersCtrl'
-        }).when('/403', {
-            templateUrl : 'partials/403'
-        }).when('/404', {
-            templateUrl : 'partials/404'
-        }).when('/500', {
-            templateUrl : 'partials/500'
-        }).otherwise({
-            redirectTo: "/404"
-        });
+        $routeProvider.when('/', { templateUrl : 'partials/home' })
+            .when('/login',                { templateUrl : 'partials/login', controller : 'LoginCtrl' })
+            .when('/getpassword',          { templateUrl : 'partials/getpassword', controller : 'GetPasswordCtrl' })
+            .when('/changepassword/:code', { templateUrl : 'partials/changepassword', controller : 'ChangePasswordCtrl' })
+            .when('/admin',                { templateUrl : 'partials/admin/home' })
+            .when('/admin/users',          { templateUrl : 'partials/admin/users', controller  : 'UsersCtrl' })
+            .when('/admin/users/:id',      { templateUrl : 'partials/admin/user', controller  : 'ModifyUserCtrl' })
+            .when('/403',                  { templateUrl : 'partials/403' })
+            .when('/404',                  { templateUrl : 'partials/404' })
+            .when('/500',                  { templateUrl : 'partials/500' })
+            .otherwise({ redirectTo: "/404" });
 
         $locationProvider.html5Mode(true);
+
+            /*
+        * Notifications config (toastr)
+        */
+
+        toastr.options = {
+            "closeButton"     : true,
+            "positionClass"   : "toast-bottom-center",
+            "onclick"         : null,
+            "debug"           : false,
+            "showDuration"    : "0",
+            "hideDuration"    : "100",
+            "timeOut"         : "0",
+            "extendedTimeOut" : "0",
+            "showEasing"      : "swing",
+            "hideEasing"      : "swing",
+            "showMethod"      : "fadeIn",
+            "hideMethod"      : "fadeOut"
+        };
     }
 ]);
 

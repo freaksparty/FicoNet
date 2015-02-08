@@ -14,6 +14,8 @@ module.exports = {
         if(!req.isAuthenticated || !req.isAuthenticated())
             return res.status(401).json(authError);
 
+        if(req.user.deleted) req.logout();
+
         return next();
     },
 

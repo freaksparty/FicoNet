@@ -173,10 +173,16 @@ module.exports = {
         return model;
     },
 
-    makeBaseWhere : function (data, deleted) {
+    makeBaseWhere : function (data, deleted, onlyDeleted) {
         var where = {};
 
-        where.deleted = !!deleted;
+
+        if(!deleted)
+            where.deleted = false;
+
+        if(onlyDeleted) 
+            where.deleted = true;
+
 
         this.copyObject(data, where);
 

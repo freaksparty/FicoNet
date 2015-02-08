@@ -15,6 +15,7 @@ FICONET.controller("LoginCtrl", ['$scope', '$location', 'AuthServ',
                 $scope.login.logging = false;
             }, function (error) {
                 $scope.login.logging = false;
+                toastr.error("Usuario y/o contraseña incorrectos", "Login");
             });
         }
     }

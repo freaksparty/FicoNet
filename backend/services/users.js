@@ -26,13 +26,17 @@ makeHash = function (user, end) {
 
 sendEmail = function (user, end) {
     utils.tryThrowableFunction(function () { 
-        utils.sendEmail(user.email, "Change Password", user.newpassword, end);
+        utils.sendEmail(
+            user.email, 
+            "FICONET: Cambio de contraseña", 
+            "Acceda al siguiente enlace para cambiar la contraseña: <a href='http://192.168.0.30:8080/changepassword/"+user.newpassword+"'>Cambiar contraseña</a><br>Consulte con alguien de la organización si tiene algún problema", 
+            end);
     }, end);
 };
 
 module.exports = {
     createUser: function (data, done) {
-        
+
         dbServices.create({
             model : model, 
             obj   : data, 
@@ -51,9 +55,11 @@ module.exports = {
             return makePassword(user, !!user.password, cfg.end);
         }).onSuccess (function (user, cfg) {
             if(user){
-                return cfg.end(200, { 
-                    username : user.username
-                });
+                delete user.dataValues.password;
+                delete user.dataValues.newpassword;
+                delete user.dataValues.deleted;
+
+                return cfg.end(200, user);
             } else {
                 return cfg.end(500, consts.ERROR.UNKNOWN);
             }
@@ -94,9 +100,11 @@ module.exports = {
             }
         }).onSuccess (function (user, cfg) {
             if(user){
-                return cfg.end(200, {
-                    username : user.username
-                });
+                delete user.dataValues.password;
+                delete user.dataValues.newpassword;
+                delete user.dataValues.deleted;
+
+                return cfg.end(200, user);
             } else {
                 return cfg.end(500, consts.ERROR.UNKNOWN);
             }
@@ -160,7 +168,8 @@ module.exports = {
             delete user.created_at;
             delete user.username;
             delete user.newpassword;
-            delete user.email
+
+            if(!user.email) cfg.end(400, consts.ERROR.BAD_REQUEST);
 
             user.last_modified = new Date();
         }).onSearch(function (user, cfg) {
@@ -193,7 +202,28 @@ module.exports = {
             makePassword(user, cfg.end);
         }).onSuccess (function (user, cfg) {
             if(user){
-                return cfg.end(200, "");
+                return cfg.end(200, "OK");
+            } else {
+                return cfg.end(500, consts.ERROR.UNKNOWN);
+            }
+        }).exec();
+    },
+
+    retrieveDeleteUser : function (id, done) {
+        dbServices.update({
+            model : model, 
+            id    : id,
+            obj   : {deleted: false},
+            done  : done
+        }).config(function (cfg) {
+            cfg.deleted = true;
+        }).onLoad(function (user, cfg) {
+            user.last_modified = new Date();
+        }).onSearch(function (user, cfg) {
+            user.deleted = false;
+        }).onSuccess (function (user, cfg) {
+            if(user){
+                return cfg.end(200, "OK");
             } else {
                 return cfg.end(500, consts.ERROR.UNKNOWN);
             }
@@ -201,15 +231,15 @@ module.exports = {
     },
 
 
-    getUsers : function (done) {
-        var attrs = ["id", "username", "email", "place", "role", "created_at", "last_modified"];
+    getUsers : function (deleted, done) {
+        var attrs = ["id", "username", "email", "place", "role", "created_at", "last_modified", "deleted"];
 
         dbServices.findAll({
             model : model,
             done  : done
         }).config(function (cfg) {
             cfg.options = {
-                where      : utils.makeBaseWhere({}, false),
+                where      : utils.makeBaseWhere({}, deleted),
                 attributes : attrs
             }
 

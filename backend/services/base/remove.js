@@ -21,7 +21,7 @@ module.exports = function (options) {
                     result.deleted = true;
                     objToDelete    = result;
 
-                    cfg.onSearch && cfg.onSearch(objToDelete);
+                    cfg.onSearch && cfg.onSearch(objToDelete, cfg.data);
 
                     return service.next();
                 } else {

@@ -1,0 +1,154 @@
+ul.breadcrumb
+    li: a(href="/admin") Administrar
+    li: a(href="/admin/users") Usuarios
+    li.active(data-ng-if="!create") {{user.username}}
+    li.active(data-ng-if="create") Crear usuario
+
+div(data-ng-switch="pageState")
+
+    div(data-ng-switch-when="success")
+        h1.text-center(data-ng-if="!create") {{user.username}}
+        h1.text-center(data-ng-if="create") Crear usuario
+
+        form.form-horizontal(name='userForm')
+            fieldset
+
+                .form-group(data-ng-class="{'has-error': userForm.username.$invalid && userForm.username.$dirty, \
+                                            'has-success': userForm.username.$valid && userForm.username.$dirty}")
+                    .input-group
+                        span.input-group-addon Nick
+                        input.form-control(
+                            type='text', 
+                            name='username', 
+                            placeholder="Nick", 
+                            data-ng-model="user.username",
+                            data-ng-disabled='creating || modifying',
+                            data-ng-minlength = '3',
+                            maxlength = '25', 
+                            required
+                        )
+
+
+                .form-group(data-ng-class="{'has-error': userForm.email.$invalid && userForm.email.$dirty, \
+                                            'has-success': userForm.email.$valid && userForm.email.$dirty}")
+                    .input-group
+                        span.input-group-addon Email
+                        input.form-control(
+                            type='email', 
+                            name='email', 
+                            placeholder="Email", 
+                            data-ng-model="user.email", 
+                            data-ng-disabled='creating || modifying',
+                            required
+                        )
+
+
+                .form-group(data-ng-class="{'has-error': userForm.place.$invalid && userForm.place.$dirty, \
+                                            'has-success': userForm.place.$valid && userForm.place.$dirty}")
+                    .input-group
+                        span.input-group-addon Plaza
+                        input.form-control(
+                            type='number', 
+                            name='place', 
+                            placeholder="Plaza", 
+                            data-ng-model="user.place", 
+                            data-ng-disabled='creating || modifying',
+                            required
+                        )
+
+                .form-group(data-ng-class="{'has-error': userForm.password.$invalid && userForm.password.$dirty, \
+                                            'has-success': userForm.password.$valid && userForm.password.$dirty}",
+                            data-ng-if="create")
+                    .input-group
+                        span.input-group-addon Contraseña
+                        input.form-control(
+                            type='password', 
+                            name='password', 
+                            placeholder="Contraseña", 
+                            data-ng-model="user.password",
+                            data-ng-disabled='creating || modifying',
+                            data-ng-minlength = '6',
+                            required
+                        )
+
+                .form-group.text-center(data-ng-if="!create")
+                    button.btn.btn-warning(
+                        type='submit', 
+                        data-ng-disabled='userForm.$invalid || modifying', 
+                        data-ng-click="updateUser()"
+                    )
+                        span.fa.fa-circle-o-notch.fa-spin(data-ng-if="modifying")
+                        span(data-ng-if="!modifying") Modificar
+
+
+                .form-group.text-center(data-ng-if="create")
+                    button.btn.btn-warning(
+                        type='submit', 
+                        data-ng-disabled='userForm.$invalid || creating', 
+                        data-ng-click="createUser()"
+                    )
+                        span.fa.fa-circle-o-notch.fa-spin(data-ng-if="creating")
+                        span(data-ng-if="!creating") Crear
+
+
+        form.form-horizontal(name='passwordForm', data-ng-if="!create")
+            fieldset
+                legend.text-center Cambiar contraseña
+
+
+                .form-group(data-ng-class="{'has-error': passwordForm.password.$invalid && passwordForm.password.$dirty, \
+                                            'has-success': passwordForm.password.$valid && passwordForm.password.$dirty}")
+                    .input-group
+                        span.input-group-addon Nueva contraseña
+                        input.form-control(
+                            type='password', 
+                            name='password', 
+                            placeholder="Contraseña", 
+                            data-ng-model="newpass.password",
+                            data-ng-disabled='modifying',
+                            data-ng-minlength = '6',
+                            required
+                        )
+
+                .form-group.text-center
+                    button.btn.btn-warning(
+                        type='submit', 
+                        data-ng-disabled='passwordForm.$invalid || modifying', 
+                        data-ng-click="updatePassword()"
+                    )
+                        span.fa.fa-circle-o-notch.fa-spin(data-ng-if="modifying")
+                        span(data-ng-if="!modifying") Cambiar
+
+
+        form.form-horizontal(name='roleForm', data-ng-if="!create && $root.isGod()")
+            fieldset
+                legend.text-center Cambiar rol
+
+
+                .form-group(data-ng-class="{'has-error': roleForm.role.$invalid && roleForm.role.$dirty, \
+                                            'has-success': roleForm.role.$valid && roleForm.role.$dirty}")
+                    .input-group
+                        span.input-group-addon Nuevo Rol
+                        select.form-control(
+                            name = 'role',
+                            data-ng-model="newrole.role"
+                            data-ng-options="role for role in roles",
+                            data-ng-disabled = 'modifying',
+                            required
+                        )
+
+                .form-group.text-center
+                    button.btn.btn-warning(
+                        type='submit', 
+                        data-ng-disabled='roleForm.$invalid || modifying', 
+                        data-ng-click="updateRole()"
+                    )
+                        span.fa.fa-circle-o-notch.fa-spin(data-ng-if="modifying")
+                        span(data-ng-if="!modifying") Cambiar
+
+
+    div(data-ng-switch-when="error")
+        div(data-ng-include="'pageLoadingError.html'")
+
+    div(data-ng-switch-when="loading")
+        div(data-ng-include="'pageLoading.html'")

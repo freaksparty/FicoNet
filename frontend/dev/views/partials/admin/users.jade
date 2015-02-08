@@ -1,30 +1,140 @@
-h1.text-center Usuarios
+ul.breadcrumb
+    li: a(href="/admin") Administrar
+    li.active Usuarios
 
-table.table.table-striped.table-hover.table-responsive.text-center
-    thead
-        tr.active
-            td: a(href="", data-ng-click="orderById()") #
-            td: a(href="", data-ng-click="orderByName()") Nick
-            td: a(href="", data-ng-click="orderByPlace()") Plaza
-            td: a(href="", data-ng-click="orderByRole()") Rol
-            td Modificar
-            td Eliminar
+h1.text-center 
+    span Usuarios
+    div.pull-right
+        a.btn.btn-success(href="/admin/users/create") 
+            span.fa.fa-user &nbsp;
+            span Nuevo usuario
 
-    tbody
-        tr(data-ng-repeat="user in users | orderBy: predicate:reverse")
-            td {{user.id}}
-            td {{user.username}}
-            td {{user.place}}
-            td {{user.role}}
-            td: a(href='#')
-                    span.fa.fa-pencil( 
-                        data-ng-class="{'text-warning': modifyHover}", 
-                        data-ng-mouseenter="modifyHover = true", 
-                        data-ng-mouseleave="modifyHover = false"
-                    )
-            td: a(href='#')
-                    span.fa.fa-remove( 
-                        data-ng-class="{'text-danger': removeHover}", 
-                        data-ng-mouseenter="removeHover = true", 
-                        data-ng-mouseleave="removeHover = false"
-                    )
+
+div(data-ng-switch="pageState")
+
+    div(data-ng-switch-when="success")
+        input.form-control(type='text', placeholder='Buscar', data-ng-model="searchText")
+
+        table.table.table-striped.table-hover.table-responsive.text-center
+            thead
+                tr.active
+                    td: a(href="", data-ng-click="orderById()") #
+                    td: a(href="", data-ng-click="orderByName()") Nick
+                    td: a(href="", data-ng-click="orderByPlace()") Plaza
+                    td: a(href="", data-ng-click="orderByRole()") Rol
+                    td Modificar
+                    td Eliminar / Recuperar
+                    td(data-ng-if="$root.isGod()") Borrado Total
+
+            tbody
+                tr(data-ng-repeat="user in users | filter:searchText| orderBy: predicate:reverse",
+                   data-ng-class="{'danger': user.deleted}")
+                    td {{user.id}}
+                    td: a(href='', data-ng-click="openShowDetailDialog(user, 'sm')") {{user.username}}
+                    td {{user.place}}
+                    td {{user.role}}
+                    td: a(data-ng-href='/admin/users/{{user.id}}', data-ng-if="!user.deleted")
+                            span.fa.fa-pencil( 
+                                data-ng-class="{'text-warning': modifyHover}", 
+                                data-ng-mouseenter="modifyHover = true", 
+                                data-ng-mouseleave="modifyHover = false"
+                            )
+                    td
+                        a(href='', data-ng-click="openDeleteDialog(user, 'sm')", data-ng-if="!user.deleted")
+                            span.fa.fa-remove( 
+                                data-ng-class="{'text-danger': removeHover}", 
+                                data-ng-mouseenter="removeHover = true", 
+                                data-ng-mouseleave="removeHover = false"
+                            )
+
+                        a(href='', data-ng-click="openRetrieveDialog(user, 'sm')", data-ng-if="user.deleted")
+                            span.fa.fa-check( 
+                                data-ng-class="{'text-success': retrieve}", 
+                                data-ng-mouseenter="retrieve = true", 
+                                data-ng-mouseleave="retrieve = false"
+                            )
+
+                    td(data-ng-if="$root.isGod()")
+                        a(href='', data-ng-click="openHardDeleteDialog(user, 'sm')", data-ng-if="user.deleted")
+                            span.fa.fa-remove.fa-2x( 
+                                data-ng-class="{'text-danger': hardRemoveHover}", 
+                                data-ng-mouseenter="hardRemoveHover = true", 
+                                data-ng-mouseleave="hardRemoveHover = false"
+                            )
+
+
+        script(type="text/ng-template", id="deleteUserModal.html")
+            
+            .modal-header
+                    h3.modal-title Borrar usuario
+
+            .modal-body
+                span ¿Estás seguro de que deseas borrar a 
+                    b {{userToDelete.username}}
+                    span ?
+            .modal-footer
+                .btn.btn-danger.pull-left(data-ng-click="ok()") Borrar
+                .btn.btn-info(data-ng-click="cancel()") Cancelar
+
+
+        script(type="text/ng-template", id="hardDeleteUserModal.html")
+            
+            .modal-header
+                    h3.modal-title Borrado definitivo de usuario
+
+            .modal-body
+                span ¿Estás seguro de que deseas borrar a 
+                    b {{userToDelete.username}} 
+                    span definitivamente ?
+                    i Se perderá toda la información referente a él, incluyendo participaciones en torneos, etc
+            .modal-footer
+                .btn.btn-danger.pull-left(data-ng-click="ok()") Borrar definitivamente
+                .btn.btn-info(data-ng-click="cancel()") Cancelar
+
+
+        script(type="text/ng-template", id="retrieveUserModal.html")
+            
+            .modal-header
+                    h3.modal-title Recuperación de usuario
+
+            .modal-body
+                span ¿Estás seguro de que deseas recuperar a 
+                    b {{userToRetrieve.username}} 
+                    span ?
+            .modal-footer
+                .btn.btn-success.pull-left(data-ng-click="ok()") Recuperar
+                .btn.btn-info(data-ng-click="cancel()") Cancelar
+
+
+        script(type="text/ng-template", id="detailUserModal.html")
+            
+            .modal-header
+                    h3.modal-title Detalle de usuario
+
+            .modal-body
+                div
+                    b id: 
+                    span {{userToShow.id}}
+                div
+                    b Nick: 
+                    span {{userToShow.username}}
+                div
+                    b Plaza: 
+                    span {{userToShow.place}}
+                div
+                    b Rol: 
+                    span {{userToShow.role}}
+                div
+                    b Creado: 
+                    span {{userToShow.created_at | date:'dd/MM/yyyy - HH:mm:ss'}}
+                div
+                    b Modificado: 
+                    span {{userToShow.last_modified | date:'dd/MM/yyyy - HH:mm:ss'}}
+            .modal-footer
+                .btn.btn-info(data-ng-click="ok()") Cerrar
+
+    div(data-ng-switch-when="error")
+        div(data-ng-include="'pageLoadingError.html'")
+
+    div(data-ng-switch-when="loading")
+        div(data-ng-include="'pageLoading.html'")

@@ -30,6 +30,7 @@ module.exports = function(grunt) {
                     "frontend/static/css/styles.css": [
                         "**/lato.less",
                         "**/bootstrap.less", 
+                        "**/toastr.less",
                         "**/font-awesome.less",
                         "**/styles.less"
                     ]
@@ -49,6 +50,7 @@ module.exports = function(grunt) {
                         'frontend/dev/js/libs/angular-cookies.js',
                         'frontend/dev/js/libs/ui-bootstrap.js',
                         'frontend/dev/js/libs/ui-bootstrap-tpls.js',
+                        'frontend/dev/js/libs/toastr.js',
                         'frontend/dev/js/app/app.js', 
                         'frontend/dev/js/app/services/*.js', 
                         'frontend/dev/js/app/controllers/*.js', 

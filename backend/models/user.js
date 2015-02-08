@@ -7,12 +7,12 @@ module.exports = function (sequelize, DataTypes) {
     User = sequelize.define("User", {
         
         "username" : { 
-            type      : DataTypes.STRING(15),
+            type      : DataTypes.STRING(25),
             allowNull : false, 
             unique    : true,
             validate  : {
                 is  : { args: ["^[a-z0-9_\-]+$", "i"], msg: consts.VALIDATES.USER.USERNAME.IS  },
-                len : { args: [3,15], msg: consts.VALIDATES.USER.USERNAME.LEN }
+                len : { args: [3,25], msg: consts.VALIDATES.USER.USERNAME.LEN }
             } 
         },
 
