@@ -27,15 +27,14 @@ module.exports = function (passport) {
                     email   : email,
                     deleted : false
                 }
-            }, {raw: true}).success(function (user) {
-                console.log("USER: " + user);
+            }, {raw: true}).then(function (user) {
                 if (user && user.password && 
                         user.password === db.User.generateHash(password, user.email)){
                     return done(null, user);
                 } else {
                     return done(null, false);
                 }
-            }).error(function (err) {
+            }).catch(function (err) {
                 return done(err, false);
             })
         });
