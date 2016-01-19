@@ -119,12 +119,12 @@ router(app);
  * Start Express server.
  */
 
-models.sequelize.sync().complete(function (err) {
-    if(err) throw err;
-
+models.sequelize.sync().then(function () {
     app.listen(app.get('port'), function() {
         console.log('✔ FicoNet server listening on port %d', app.get('port'));
     });
+}).catch(function (err) {
+    throw err;
 });
 
 module.exports = app;

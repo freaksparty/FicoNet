@@ -15,16 +15,16 @@ module.exports = {
 
     partials : {
         anon : function (req, res) {
-            doPartialResponse(res, "", req.param("view"));
+            doPartialResponse(res, "", req.params["view"]);
             
         },
 
         admin : function (req, res) {
-            doPartialResponse(res, "admin", req.param("view"));
+            doPartialResponse(res, "admin", req.params["view"]);
         },
 
         god : function (req, res) {
-            doPartialResponse(res, "god", req.param("view"));
+            doPartialResponse(res, "god", req.params["view"]);
         }
     }
 }

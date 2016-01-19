@@ -9,9 +9,9 @@ module.exports = function (passport) {
 
 
     passport.deserializeUser( function (id, done) {
-        db.User.find(id, {raw: true}).success(function (user) {
+        db.User.findById(id, {raw: true}).then(function (user) {
             return done(null, user);
-        }).error(function (err) {
+        }).catch(function (err) {
             return done(err, false);
         });
     });
