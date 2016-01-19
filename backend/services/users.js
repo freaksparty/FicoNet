@@ -2,12 +2,14 @@ var dbServices = require("./base"),
     db         = require("../models"),
     utils      = require("../utils"),
     consts     = require("../utils/consts"),
-    makePassword, makeHash, changePassword, sendEmail, ATTRS, model;
+    errors     = require("./errors/errors.js"),
+    makePassword, makeHash, changePassword, sendEmail, ATTRS, model, User;
 
 
 ATTRS = ["id", "username", "password", "email", "place", "role", "created_at", "last_modified"];
 
 model = db.User;
+User = db.User;
 
 
 makePassword = function (user, end) {
@@ -234,33 +236,33 @@ module.exports = {
     getUsers : function (deleted, done) {
         var attrs = ["id", "username", "email", "place", "role", "created_at", "last_modified", "deleted"];
 
-        dbServices.findAll({
-            model : model,
-            done  : done
-        }).config(function (cfg) {
-            cfg.options = {
-                where      : utils.makeBaseWhere({}, deleted),
-                attributes : attrs
-            }
-
-            cfg.raw = true;
-        }).exec();
+        User.findAll({
+            where: utils.makeBaseWhere({}, deleted),
+            attributes: attrs,
+            raw: true
+        }).then(function (users) {
+            return done(200, users);
+        }).catch(function (error) {
+            return done(500, error);
+        });
     },
 
 
     getUser : function (id, done) {
         var attrs = ["id", "username", "email", "place", "role", "created_at", "last_modified"];
 
-        dbServices.find({
-            model : model,
-            done  : done
-        }).config(function (cfg) {
-            cfg.options = {
-                where      : utils.makeBaseWhere({id : id}, false),
-                attributes : attrs
-            }
-
-            cfg.raw = true;
-        }).exec();
+        db.User.findById(id, {
+            raw: true, 
+            attributes: attrs
+        }).then(function (user) {
+            if(!user) { throw new errors.ElementNotFoundError() }
+                
+            return done(200, user);
+        }).catch(errors.ElementNotFoundError, function (err) {
+            return done(404, err);
+        }).catch(function (err) {
+            console.log(JSON.stringify(err));
+            return done(500, err);
+        });
     }
 }
