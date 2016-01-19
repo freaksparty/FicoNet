@@ -2,10 +2,10 @@ var config, set;
 
 
 mailconfig = {
-    "from"     : '',
-    'password' : '' ,
-    'service'  : '',
-    'user'     : ''  
+    "from"     : FN_MAIL_FROM     || '',
+    'user'     : FN_MAIL_USER     || '',  
+    'password' : FN_MAIL_PASSWORD || '',
+    'service'  : FN_MAIL_SERVICE  || ''
 }; 
 
 

@@ -2,13 +2,13 @@ var config, set;
 
 
 dbconfig = {
-    "protocol" : "mysql",
-    "host"     : "localhost",
-    "port"     : "3306",
-    "database" : "ficonet-dev",
-    "user"     : "ficonet-dev",
-    "password" : "ficonet-dev",
-    "debug"    : true
+    "protocol" : process.env.FN_MYSQL_PROTOCOL || "mysql",
+    "host"     : process.env.FN_MYSQL_HOST     || "localhost",
+    "port"     : process.env.FN_MYSQL_PORT     || "3306",
+    "database" : process.env.FN_MYSQL_DATABASE || "ficonet-dev",
+    "user"     : process.env.FN_MYSQL_USER     || "ficonet-dev",
+    "password" : process.env.FN_MYSQL_PASSWORD || "ficonet-dev",
+    "debug"    : process.env.FN_ENVIRONMENT    != "pro"
 }; 
 
 

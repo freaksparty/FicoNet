@@ -2,9 +2,9 @@ var redisConfig, set;
 
 
 redisConfig = {
-    "host"     : "localhost",
-    "port"     : "6379",
-    "password" : "fol-test",
+    "host"     : process.env.FN_REDIS_HOST     || "localhost",
+    "port"     : process.env.FN_REDIS_PORT     || "6379",
+    "password" : process.env.FN_REDIS_PASSWORD || "fol-test",
 };
 
 

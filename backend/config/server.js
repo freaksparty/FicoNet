@@ -1,6 +1,6 @@
 var port;
 
-port = process.env.PORT || 8080;
+port = process.env.FN_PORT || 8080;
 
 module.exports = {
     port: port 
