@@ -158,8 +158,7 @@ module.exports = {
         }).spread(function (count) {
             if (count != 1) { throw new errors.ElementNotFoundError() }
 
-            return done(200, "OK")
-            //sendEmail(user, cfg.end);
+            sendEmail(user, done);
         }).catch(errors.ElementNotFoundError, function (err) {
             return done(404, consts.ERROR.NOT_FOUND);
         }).catch(function (err) {
@@ -191,7 +190,7 @@ module.exports = {
                 return done(500, consts.ERROR.UNKNOWN);
             });
         }).catch(errors.ElementNotFoundError, function (err) {
-            return done(404, consts.ERROR.NOT_FOUND);
+            return done(404, consts.ERROR.NOT_FOUND);gir 
         }).catch(function (err) {
             return done(500, consts.ERROR.UNKNOWN);
         });
