@@ -12,18 +12,14 @@ model = db.User;
 User = db.User;
 
 
-makePassword = function (user, end) {
-    utils.tryThrowableFunction(function () { 
-        if(user.password) {
-            user.password = model.generateHash(user.password, user.email);
-        }
-    }, end); 
+makePassword = function (password, email) {
+    if(password) {
+        return model.generateHash(password, email);
+    }
 };
 
-makeHash = function (user, end) {
-    utils.tryThrowableFunction(function () { 
-        user.newpassword = model.generateHash(user.email, ""+Math.random());
-    }, end);
+makeHash = function (email) {
+    return User.generateHash(email, ""+Math.random());
 }; 
 
 sendEmail = function (user, end) {
@@ -152,63 +148,53 @@ module.exports = {
     },
 
     generateNewPasswordHash : function (email, done) {
-        var userPass;
+        User.update({
+            newpassword   : makeHash(email),
+            last_modified : new Date()
+        },{
+            where: utils.makeBaseWhere({email: email}, false),
+            validate: true,
+            raw: true
+        }).spread(function (count) {
+            if (count != 1) { throw new errors.ElementNotFoundError() }
 
-        dbServices.update({
-            model : model, 
-            field : "email",
-            value : email,
-            obj   : {email : email},
-            attrs : ATTRS,
-            done  : done
-        }).config(function (cfg) {
-            cfg.deleted = false;
-        }).onLoad(function (user, cfg) {
-            delete user.role;
-            delete user.id;
-            delete user.password;
-            delete user.created_at;
-            delete user.username;
-            delete user.newpassword;
-
-            if(!user.email) cfg.end(400, consts.ERROR.BAD_REQUEST);
-
-            user.last_modified = new Date();
-        }).onSearch(function (user, cfg) {
-            makeHash(user, cfg.end);
-        }).onSuccess (function (user, cfg) {
-            if(user){
-                return sendEmail(user, cfg.end);
-            } else {
-                return cfg.end(500, consts.ERROR.UNKNOWN);
-            }
-        }).exec();
+            return done(200, "OK")
+            //sendEmail(user, cfg.end);
+        }).catch(errors.ElementNotFoundError, function (err) {
+            return done(404, consts.ERROR.NOT_FOUND);
+        }).catch(function (err) {
+            return done(500, consts.ERROR.UNKNOWN);
+        });
     },
 
     changePassword : function (code, password, isCode, done) {
-        var field = isCode ? 'newpassword' : 'id';
+        var field = isCode ? 'newpassword' : 'id',
+            where = utils.makeBaseWhere({}, false);
 
-        dbServices.update({
-            model : model, 
-            field : field,
-            value : code,
-            obj   : { password : password },
-            attrs : ATTRS,
-            done  : done
-        }).config(function (cfg) {
-            cfg.deleted = false;
-        }).onLoad(function (user, cfg) {
-            user.last_modified = new Date();
-        }).onSearch(function (user, cfg) {
-            user.newpassword = null;
-            makePassword(user, cfg.end);
-        }).onSuccess (function (user, cfg) {
-            if(user){
-                return cfg.end(200, "OK");
-            } else {
-                return cfg.end(500, consts.ERROR.UNKNOWN);
-            }
-        }).exec();
+        where[field] = code; 
+
+        User.findOne({
+            where      : where,
+            attributes : attrs,
+        }).then(function (user) {
+            if(!user) { throw new errors.ElementNotFoundError() }
+
+            user.update({
+                newpassword   : null, 
+                password      : makePassword(password, user.email),
+                last_modified : new Date()
+            }).then(function (user) {
+                if(!user) { throw new Error(); }
+
+                return done(200, user);
+            }).catch(function (error) {
+                return done(500, consts.ERROR.UNKNOWN);
+            });
+        }).catch(errors.ElementNotFoundError, function (err) {
+            return done(404, consts.ERROR.NOT_FOUND);
+        }).catch(function (err) {
+            return done(500, consts.ERROR.UNKNOWN);
+        });
     },
 
     retrieveDeleteUser : function (id, done) {
@@ -259,10 +245,10 @@ module.exports = {
                 
             return done(200, user);
         }).catch(errors.ElementNotFoundError, function (err) {
-            return done(404, err);
+            return done(404, consts,ERROR.NOT_FOUND);
         }).catch(function (err) {
             console.log(JSON.stringify(err));
-            return done(500, err);
+            return done(500, consts.ERROR.UNKNOWN);
         });
     }
 }
