@@ -1,171 +1,166 @@
-var dbServices = require("./base"),
-    db         = require("../models"),
+var db         = require("../models"),
     utils      = require("../utils"),
     consts     = require("../utils/consts"),
+    authconfig = require("../config/auth.js"),
     errors     = require("./errors/errors.js"),
-    makePassword, makeHash, changePassword, sendEmail, ATTRS, model, User;
+    makePassword, makeHash, changePassword, sendEmail, model, User;
 
-
-ATTRS = ["id", "username", "password", "email", "place", "role", "created_at", "last_modified"];
-
-model = db.User;
 User = db.User;
 
-
-makePassword = function (password, email) {
-    if(password) {
-        return model.generateHash(password, email);
-    }
+makePassword = function (password) {
+    return User.generateHash(password, authconfig.config().salt);
 };
 
 makeHash = function (email) {
     return User.generateHash(email, ""+Math.random());
 }; 
 
-sendEmail = function (email, newpassword, end) {
+sendEmail = function (email, host, newpassword, end) {
     utils.tryThrowableFunction(function () { 
         utils.sendEmail(
             email, 
             "FICONET: Cambio de contraseña", 
-            "Acceda al siguiente enlace para cambiar la contraseña: <a href='http://192.168.0.30:8080/changepassword/"+newpassword+"'>Cambiar contraseña</a><br>Consulte con alguien de la organización si tiene algún problema", 
+            "Acceda al siguiente enlace para cambiar la contraseña: <a href='http://"+host+"/changepassword/"+newpassword+"'>Cambiar contraseña</a><br>Consulte con alguien de la organización si tiene algún problema", 
             end);
     }, end);
 };
 
 module.exports = {
     createUser: function (data, done) {
+        var now   = new Date(),
+            attrs = ["username", "password", "email", "place", "created_at", "last_modified"];
 
-        dbServices.create({
-            model : model, 
-            obj   : data, 
-            attrs : ATTRS, 
-            done  : done
-        }).onLoad(function (user, cfg) {
-            var now = new Date();
+        data.created_at    = now;
+        data.last_modified = now;
+        data.password      = makePassword(data.password)
 
-            user.created_at    = now;
-            user.last_modified = now;
+        User.create(data, {
+            raw    : true,
+            fields : attrs 
+        }).then(function (user) {
+            if(!user) { throw new Error(); }
 
-            delete user.role;
-            delete user.id;
-            delete user.newpassword;
+            delete user.dataValues.password;
+            delete user.dataValues.newpassword;
+            delete user.dataValues.deleted;
 
-            return makePassword(user, !!user.password, cfg.end);
-        }).onSuccess (function (user, cfg) {
-            if(user){
-                delete user.dataValues.password;
-                delete user.dataValues.newpassword;
-                delete user.dataValues.deleted;
-
-                return cfg.end(200, user);
-            } else {
-                return cfg.end(500, consts.ERROR.UNKNOWN);
-            }
-        }).exec();
+            return done(200, user.dataValues);
+        }).catch(function (error) {
+            return done(500, consts.ERROR.UNKNOWN);
+        });
     },
 
 
-    updateUser : function (id, roleChanged, updatePassword, data, done) {
-        var userPass;
+    updateUser : function (id, roleChanged, data, done) {
+        User.findOne({
+            where : utils.makeBaseWhere({id: id}, false),
+        }).then(function (user) {
+            if(!user) { throw new errors.ElementNotFoundError() }
 
-        dbServices.update({
-            model : model, 
-            id    : id,
-            obj   : data,
-            attrs : ATTRS,
-            done  : done
-        }).config(function (cfg) {
-            cfg.deleted = false;
-        }).onLoad(function (user, cfg) {
+            delete data.id;
+            delete data.password;
+            delete data.created_at;
+            delete data.newpassword;
+            delete data.deleted;
+
             if(!roleChanged) {
-                delete user.role;
-            } else if(user.role === "god"){
-                return cfg.end(403, consts.ERROR.FORBIDDEN);
+                delete data.role;
+            } else if(data.role === "god" || user.role === "god"){
+                throw new errors.ForbiddenActionError();
             }
 
-            if(updatePassword) userPass = user.password;
+            data.last_modified = new Date();
 
-            delete user.id;
-            delete user.password;
-            delete user.created_at;
-            delete user.newpassword;
+            user.update(data).then(function (user) {
+                if(!user) { throw new Error(); }
 
-            user.last_modified = new Date();
-        }).onSearch(function (user, cfg) {
-            if(updatePassword) {
-                user.password = userPass;
-                makePassword(user, cfg.end);
-            }
-        }).onSuccess (function (user, cfg) {
-            if(user){
                 delete user.dataValues.password;
                 delete user.dataValues.newpassword;
                 delete user.dataValues.deleted;
 
-                return cfg.end(200, user);
-            } else {
-                return cfg.end(500, consts.ERROR.UNKNOWN);
-            }
-        }).exec();
+                return done(200, user.dataValues);
+            }).catch(function (error) {
+                return done(500, consts.ERROR.UNKNOWN);
+            });
+        }).catch(errors.ElementNotFoundError, function (err) {
+            return done(404, consts.ERROR.NOT_FOUND); 
+        }).catch(errors.ForbiddenActionError, function (err) {
+            return done(403, consts.ERROR.FORBIDDEN); 
+        }).catch(function (err) {
+            return done(500, consts.ERROR.UNKNOWN);
+        });
     },
 
 
     removeUser : function (id, done) {
-        dbServices.remove({
-            model : model, 
-            id    : id,
-            done  : done
-        }).onSearch(function (user, cfg) {
-            if(user.role === 'god') {
-                return cfg.end(403, consts.ERROR.FORBIDDEN);
-            }
-        }).onSuccess (function (user, cfg) {
-            if(user){
-                return cfg.end(200, user.id);
-            } else {
-                return cfg.end(500, consts.ERROR.UNKNOWN);
-            }
-        }).exec();
+        User.findOne({
+            where : utils.makeBaseWhere({id: id}, false),
+        }).then(function (user) {
+            if(!user)               { throw new errors.ElementNotFoundError() }
+            if(user.role === "god") { throw new errors.ForbiddenActionError() }
+
+            user.update({
+                deleted: true,
+                last_modified : new Date()
+            }).then(function (user) {
+                if(!user) { throw new Error(); }
+
+                return done(200, "OK");
+            }).catch(function (error) {
+                return done(500, consts.ERROR.UNKNOWN);
+            });
+        }).catch(errors.ElementNotFoundError, function (err) {
+            return done(404, consts.ERROR.NOT_FOUND); 
+        }).catch(errors.ForbiddenActionError, function (err) {
+            return done(403, consts.ERROR.FORBIDDEN); 
+        }).catch(function (err) {
+            return done(500, consts.ERROR.UNKNOWN);
+        });
     },
 
 
     hardRemoveUser : function (id, done) {
-        dbServices.hardRemove({
-            model : model, 
-            id    : id,
-            done  : done
-        }).onSearch(function (user, cfg) {
-            if(user.role === 'god') {
-                return cfg.end(403, consts.ERROR.FORBIDDEN);
-            }
-        }).onSuccess (function (user, cfg) {
-            if(user){
-                return cfg.end(200, user.id);
-            } else {
-                return cfg.end(500, consts.ERROR.UNKNOWN);
-            }
-        }).exec();
+        User.findOne({
+            where : utils.makeBaseWhere({id: id}, true, true),
+        }).then(function (user) {
+            if(!user)               { throw new errors.ElementNotFoundError() }
+            if(user.role === "god") { throw new errors.ForbiddenActionError() }
+
+            user.destroy().then(function (user) {
+                if(!user) { throw new Error(); }
+
+                return done(200, "OK");
+            }).catch(function (error) {
+                return done(500, consts.ERROR.UNKNOWN);
+            });
+        }).catch(errors.ElementNotFoundError, function (err) {
+            return done(404, consts.ERROR.NOT_FOUND); 
+        }).catch(errors.ForbiddenActionError, function (err) {
+            return done(403, consts.ERROR.FORBIDDEN); 
+        }).catch(function (err) {
+            return done(500, consts.ERROR.UNKNOWN);
+        });
     },
 
-    generateNewPasswordHash : function (email, done) {
+    generateNewPasswordHash : function (email, host, done) {
         var newpassword = makeHash(email);
         User.update({
             newpassword   : newpassword,
             last_modified : new Date()
         },{
-            where: utils.makeBaseWhere({email: email}, false),
-            validate: true,
-            raw: true
+            where    : utils.makeBaseWhere({email: email}, false),
+            validate : true,
+            raw      : true
         }).spread(function (count) {
             if (count != 1) { throw new errors.ElementNotFoundError() }
-            
-            sendEmail(email, newpassword, done);
+            sendEmail(email, host, newpassword, done);
         }).catch(errors.ElementNotFoundError, function (err) {
             return done(404, consts.ERROR.NOT_FOUND);
         }).catch(function (err) {
             return done(500, consts.ERROR.UNKNOWN);
         });
     },
+
 
     changePassword : function (code, password, isCode, done) {
         var field = isCode ? 'newpassword' : 'id',
@@ -174,48 +169,50 @@ module.exports = {
         where[field] = code; 
 
         User.findOne({
-            where      : where,
-            attributes : attrs,
+            where : where,
         }).then(function (user) {
             if(!user) { throw new errors.ElementNotFoundError() }
 
             user.update({
                 newpassword   : null, 
-                password      : makePassword(password, user.email),
+                password      : makePassword(password),
                 last_modified : new Date()
             }).then(function (user) {
                 if(!user) { throw new Error(); }
 
-                return done(200, user);
+                return done(200, "OK");
             }).catch(function (error) {
                 return done(500, consts.ERROR.UNKNOWN);
             });
         }).catch(errors.ElementNotFoundError, function (err) {
-            return done(404, consts.ERROR.NOT_FOUND);gir 
+            return done(404, consts.ERROR.NOT_FOUND); 
         }).catch(function (err) {
             return done(500, consts.ERROR.UNKNOWN);
         });
     },
 
+
     retrieveDeleteUser : function (id, done) {
-        dbServices.update({
-            model : model, 
-            id    : id,
-            obj   : {deleted: false},
-            done  : done
-        }).config(function (cfg) {
-            cfg.deleted = true;
-        }).onLoad(function (user, cfg) {
-            user.last_modified = new Date();
-        }).onSearch(function (user, cfg) {
-            user.deleted = false;
-        }).onSuccess (function (user, cfg) {
-            if(user){
-                return cfg.end(200, "OK");
-            } else {
-                return cfg.end(500, consts.ERROR.UNKNOWN);
-            }
-        }).exec();
+        User.findOne({
+            where : utils.makeBaseWhere({id: id}, true)
+        }).then(function (user) {
+            if(!user) { throw new errors.ElementNotFoundError() }
+
+            user.update({
+                deleted       : false,
+                last_modified : new Date()
+            }).then(function (user) {
+                if(!user) { throw new Error(); }
+
+                return done(200, "OK");
+            }).catch(function (error) {
+                return done(500, consts.ERROR.UNKNOWN);
+            });
+        }).catch(errors.ElementNotFoundError, function (err) {
+            return done(404, consts.ERROR.NOT_FOUND); 
+        }).catch(function (err) {
+            return done(500, consts.ERROR.UNKNOWN);
+        });
     },
 
 
@@ -237,9 +234,10 @@ module.exports = {
     getUser : function (id, done) {
         var attrs = ["id", "username", "email", "place", "role", "created_at", "last_modified"];
 
-        db.User.findById(id, {
+        User.findById(id, {
             raw: true, 
-            attributes: attrs
+            attributes: attrs,
+            where: utils.makeBaseWhere({}, false)
         }).then(function (user) {
             if(!user) { throw new errors.ElementNotFoundError() }
                 

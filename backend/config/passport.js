@@ -1,4 +1,5 @@
 var LocalStrategy = require("passport-local").Strategy,
+    authconfig    = require("../config/auth.js"),
     db            = require("../models");
 
 module.exports = function (passport) {
@@ -29,7 +30,7 @@ module.exports = function (passport) {
                 }
             }, {raw: true}).then(function (user) {
                 if (user && user.password && 
-                        user.password === db.User.generateHash(password, user.email)){
+                        user.password === db.User.generateHash(password, authconfig.config().salt)){
                     return done(null, user);
                 } else {
                     return done(null, false);

@@ -23,7 +23,7 @@ module.exports = {
         var id   = req.params['user'],
             user = req.body;
 
-        utils.sendStandardResponse(res, services.users, "updateUser", id, false, false, user);
+        utils.sendStandardResponse(res, services.users, "updateUser", id, false, user);
     },
 
     retrieveDeleteUser : function (req, res) {
@@ -45,9 +45,10 @@ module.exports = {
     },
 
     getNewPasswordHash : function (req, res) {
-        var email = req.body.email;
+        var email = req.body.email,
+            host  = req.headers.host;
 
-        utils.sendStandardResponse(res, services.users, "generateNewPasswordHash", email);
+        utils.sendStandardResponse(res, services.users, "generateNewPasswordHash", email, host);
     },
 
     changePasswordWithCode : function (req, res) {
@@ -68,7 +69,7 @@ module.exports = {
         var user = req.params['user'],
             role = req.body;
 
-        utils.sendStandardResponse(res, services.users, "updateUser", user, true, false, role);
+        utils.sendStandardResponse(res, services.users, "updateUser", user, true, role);
     }
 
 };

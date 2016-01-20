@@ -8,6 +8,7 @@ makeError = function (name) {
 };
 
 makeError("ElementNotFoundError");
+makeError("ForbiddenActionError");
 
 
 module.exports = errors;
