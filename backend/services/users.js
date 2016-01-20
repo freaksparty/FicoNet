@@ -22,12 +22,12 @@ makeHash = function (email) {
     return User.generateHash(email, ""+Math.random());
 }; 
 
-sendEmail = function (user, end) {
+sendEmail = function (email, newpassword, end) {
     utils.tryThrowableFunction(function () { 
         utils.sendEmail(
-            user.email, 
+            email, 
             "FICONET: Cambio de contraseña", 
-            "Acceda al siguiente enlace para cambiar la contraseña: <a href='http://192.168.0.30:8080/changepassword/"+user.newpassword+"'>Cambiar contraseña</a><br>Consulte con alguien de la organización si tiene algún problema", 
+            "Acceda al siguiente enlace para cambiar la contraseña: <a href='http://192.168.0.30:8080/changepassword/"+newpassword+"'>Cambiar contraseña</a><br>Consulte con alguien de la organización si tiene algún problema", 
             end);
     }, end);
 };
@@ -148,8 +148,9 @@ module.exports = {
     },
 
     generateNewPasswordHash : function (email, done) {
+        var newpassword = makeHash(email);
         User.update({
-            newpassword   : makeHash(email),
+            newpassword   : newpassword,
             last_modified : new Date()
         },{
             where: utils.makeBaseWhere({email: email}, false),
@@ -157,8 +158,8 @@ module.exports = {
             raw: true
         }).spread(function (count) {
             if (count != 1) { throw new errors.ElementNotFoundError() }
-
-            sendEmail(user, done);
+            
+            sendEmail(email, newpassword, done);
         }).catch(errors.ElementNotFoundError, function (err) {
             return done(404, consts.ERROR.NOT_FOUND);
         }).catch(function (err) {
@@ -246,7 +247,6 @@ module.exports = {
         }).catch(errors.ElementNotFoundError, function (err) {
             return done(404, consts,ERROR.NOT_FOUND);
         }).catch(function (err) {
-            console.log(JSON.stringify(err));
             return done(500, consts.ERROR.UNKNOWN);
         });
     }
