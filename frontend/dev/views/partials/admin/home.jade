@@ -1,14 +1,7 @@
 h1.text-center Admin Panel
 
 .row
-    .col-md-2
-    .col-xs-12.col-md-8
-        .panel.panel-default
-            .panel-heading.text-center: h4 Basic admin
-            .panel-body
-               .list-group
-                    a.list-group-item(href='/admin/users', ng-show="$root.isAdmin(['admin_users'])")
-                        h1.fa.fa-users.fa-2x  Usuarios
-                    a.list-group-item(href='#', ng-show="$root.isAdmin(['admin_tournaments'])")
-                        h1.fa.fa-trophy.fa-2x  Torneos / Producciones
-    .col-md-2
+    div.col-lg2.col-md-3.col-sm-4.col-xs-6.box-cell
+        a.box(href="/admin/users/")
+            i.fa.fa-user.fa-4x.box-image
+            span.box-main-text Usuarios

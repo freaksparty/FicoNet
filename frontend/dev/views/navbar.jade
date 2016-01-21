@@ -6,13 +6,12 @@
                 span.icon-bar
                 span.icon-bar
                 span.icon-bar
-            a.navbar-brand(href='#')
-                img.fol-brand(src='static/img/brand.png')
         .navbar-collapse.collapse(collapse="navbar.collapsed")
             ul.nav.navbar-nav
-                li(data-ng-class="{ active: navbar.isActive('/')}"): a(href='/', data-ng-click="navbar.collapseIfNotCollapsed()") Principal
-                li(data-ng-class="{ active: navbar.isActive('/tournaments')}"): a(href="#", data-ng-click="navbar.collapseIfNotCollapsed()") Torneos
-                li(data-ng-class="{ active: navbar.isActive('/calendar')}"): a(href="#", data-ng-click="navbar.collapseIfNotCollapsed()") Calendario
+                li(data-ng-class="{ active: navbar.isActive('/')}")
+                    a(href='/', data-ng-click="navbar.collapseIfNotCollapsed()") 
+                        img.fol-brand.icon-bar(src='static/img/meteor_icon.png')
+                        span Principal
 
             ul.nav.navbar-nav.navbar-right
                 li(data-ng-class="{ active: navbar.isActive('/login')}", data-ng-if='!$root.user.username'): a(href="/login", data-ng-click="navbar.collapseIfNotCollapsed()") Login
@@ -21,7 +20,6 @@
                         {{$root.user.username}}
                         b.caret
                     ul.dropdown-menu
-                        li: a(href='#', data-ng-click="navbar.collapseIfNotCollapsed()") Perfil
                         li: a(href='/admin', data-ng-click="navbar.collapseIfNotCollapsed()", ng-show="$root.isAdmin()") Administrar
                         li.divider
                         li: a(href='#', data-ng-click="logout(); navbar.collapseIfNotCollapsed()") Salir

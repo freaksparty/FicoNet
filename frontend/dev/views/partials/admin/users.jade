@@ -1,66 +1,53 @@
 ul.breadcrumb
     li: a(href="/admin") Administrar
-    li.active Usuarios
-
-h1.text-center 
-    span Usuarios
-    div.pull-right
-        a.btn.btn-success(href="/admin/users/create") 
-            span.fa.fa-user &nbsp;
-            span Nuevo usuario
+    li.active Usuario
 
 
 div(data-ng-switch="pageState")
 
     div(data-ng-switch-when="success")
         input.form-control(type='text', placeholder='Buscar', data-ng-model="searchText")
+        div.space
+        div.row
+            div.col-lg2.col-md-3.col-sm-4.col-xs-6.box-cell
+                a.box.success(href="/admin/users/create")
+                    i.fa.fa-plus.fa-4x.box-image
+                    span.box-main-text Nuevo usuario
+                
 
-        table.table.table-striped.table-hover.table-responsive.text-center
-            thead
-                tr.active
-                    td: a(href="", data-ng-click="orderById()") #
-                    td: a(href="", data-ng-click="orderByName()") Nick
-                    td: a(href="", data-ng-click="orderByPlace()") Plaza
-                    td: a(href="", data-ng-click="orderByRole()") Rol
-                    td Modificar
-                    td Eliminar / Recuperar
-                    td(data-ng-if="$root.isGod()") Borrado Total
-
-            tbody
-                tr(data-ng-repeat="user in users | filter:searchText| orderBy: predicate:reverse",
-                   data-ng-class="{'danger': user.deleted}")
-                    td {{user.id}}
-                    td: a(href='', data-ng-click="openShowDetailDialog(user, 'sm')") {{user.username}}
-                    td {{user.place}}
-                    td {{user.role}}
-                    td: a(data-ng-href='/admin/users/{{user.id}}', data-ng-if="!user.deleted")
-                            span.fa.fa-pencil( 
+            div.col-lg2.col-md-3.col-sm-4.col-xs-6.box-cell(data-ng-repeat="user in users | filter:searchText| orderBy: predicate:reverse")
+                div.box(data-ng-click="openShowDetailDialog(user, 'sm'); $event.stopPropagation();", data-ng-class="{'danger': user.deleted}")
+                    img.box-image(data-ng-src="static/img/meteor.png")
+                    span.box-main-text {{user.username}}
+                    span.box-main-text
+                        a(href='', data-ng-href='/admin/users/{{user.id}}', data-ng-click="$event.stopPropagation();" data-ng-if="!user.deleted")
+                            i.fa.fa-pencil.tool( 
                                 data-ng-class="{'text-warning': modifyHover}", 
                                 data-ng-mouseenter="modifyHover = true", 
                                 data-ng-mouseleave="modifyHover = false"
                             )
-                    td
-                        a(href='', data-ng-click="openDeleteDialog(user, 'sm')", data-ng-if="!user.deleted")
-                            span.fa.fa-remove( 
+
+                        a(href='', data-ng-click="openDeleteDialog(user, 'sm'); $event.stopPropagation();", data-ng-if="!user.deleted")
+                            i.fa.fa-remove.tool( 
                                 data-ng-class="{'text-danger': removeHover}", 
                                 data-ng-mouseenter="removeHover = true", 
                                 data-ng-mouseleave="removeHover = false"
                             )
 
-                        a(href='', data-ng-click="openRetrieveDialog(user, 'sm')", data-ng-if="user.deleted")
-                            span.fa.fa-check( 
+                        a(href='', data-ng-click="openRetrieveDialog(user, 'sm'); $event.stopPropagation();", data-ng-if="user.deleted")
+                            i.fa.fa-check.tool( 
                                 data-ng-class="{'text-success': retrieve}", 
                                 data-ng-mouseenter="retrieve = true", 
                                 data-ng-mouseleave="retrieve = false"
                             )
 
-                    td(data-ng-if="$root.isGod()")
-                        a(href='', data-ng-click="openHardDeleteDialog(user, 'sm')", data-ng-if="user.deleted")
-                            span.fa.fa-remove.fa-2x( 
+                        a(href='', data-ng-click="openHardDeleteDialog(user, 'sm'); $event.stopPropagation();", data-ng-if="user.deleted && $root.isGod()")
+                            span.fa.fa-remove.tool( 
                                 data-ng-class="{'text-danger': hardRemoveHover}", 
                                 data-ng-mouseenter="hardRemoveHover = true", 
                                 data-ng-mouseleave="hardRemoveHover = false"
                             )
+
 
 
         script(type="text/ng-template", id="deleteUserModal.html")
