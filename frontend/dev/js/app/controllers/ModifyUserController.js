@@ -20,6 +20,7 @@ FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'UserS
         $scope.creating  = false;
 
         $scope.roles = ["user", "admin"];
+        $scope.types = ["normal", "stuff", "collaborator"];
 
         $scope.newrole = {};
 

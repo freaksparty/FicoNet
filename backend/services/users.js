@@ -28,7 +28,7 @@ sendEmail = function (email, host, newpassword, end) {
 module.exports = {
     createUser: function (data, done) {
         var now   = new Date(),
-            attrs = ["username", "password", "email", "place", "created_at", "last_modified"];
+            attrs = ["username", "password", "email", "type", "place", "created_at", "last_modified"];
 
         data.created_at    = now;
         data.last_modified = now;
@@ -46,6 +46,7 @@ module.exports = {
 
             return done(200, user.dataValues);
         }).catch(function (error) {
+            console.log(error);
             return done(500, consts.ERROR.UNKNOWN);
         });
     },
@@ -87,6 +88,7 @@ module.exports = {
         }).catch(errors.ForbiddenActionError, function (err) {
             return done(403, consts.ERROR.FORBIDDEN); 
         }).catch(function (err) {
+            console.log(err);
             return done(500, consts.ERROR.UNKNOWN);
         });
     },
@@ -217,7 +219,7 @@ module.exports = {
 
 
     getUsers : function (deleted, done) {
-        var attrs = ["id", "username", "email", "place", "role", "created_at", "last_modified", "deleted"];
+        var attrs = ["id", "username", "email", "place", "role", "type", "created_at", "last_modified", "deleted"];
 
         User.findAll({
             where: utils.makeBaseWhere({}, deleted),
@@ -232,7 +234,7 @@ module.exports = {
 
 
     getUser : function (id, done) {
-        var attrs = ["id", "username", "email", "place", "role", "created_at", "last_modified"];
+        var attrs = ["id", "username", "email", "place", "role", "type", "created_at", "last_modified"];
 
         User.findById(id, {
             raw: true, 

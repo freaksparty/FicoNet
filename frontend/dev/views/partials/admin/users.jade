@@ -17,7 +17,9 @@ div(data-ng-switch="pageState")
 
             div.col-lg2.col-md-3.col-sm-4.col-xs-6.box-cell(data-ng-repeat="user in users | filter:searchText| orderBy: predicate:reverse")
                 div.box(data-ng-click="openShowDetailDialog(user, 'sm'); $event.stopPropagation();", data-ng-class="{'danger': user.deleted}")
-                    img.box-image(data-ng-src="static/img/meteor.png")
+                    img.box-image(data-ng-if="user.type=='normal'" data-ng-src="static/img/meteor.png")
+                    img.box-image(data-ng-if="user.type=='stuff'" data-ng-src="static/img/meteor_green.png")
+                    img.box-image(data-ng-if="user.type=='collaborator'" data-ng-src="static/img/meteor_blue.png")
                     span.box-main-text {{user.username}}
                     span.box-main-text
                         a(href='', data-ng-href='/admin/users/{{user.id}}', data-ng-click="$event.stopPropagation();" data-ng-if="!user.deleted")
@@ -108,6 +110,40 @@ div(data-ng-switch="pageState")
                 div
                     b Plaza: 
                     span {{userToShow.place}}
+                div
+                    b Rol: 
+                    span {{userToShow.role}}
+                div
+                    b Creado: 
+                    span {{userToShow.created_at | date:'dd/MM/yyyy - HH:mm:ss'}}
+                div
+                    b Modificado: 
+                    span {{userToShow.last_modified | date:'dd/MM/yyyy - HH:mm:ss'}}
+            .modal-footer
+                .btn.btn-info(data-ng-click="ok()") Cerrar
+
+
+        script(type="text/ng-template", id="detailUserModal.html")
+            
+            .modal-header
+                    h3.modal-title Detalle de usuario
+
+            .modal-body
+                div
+                    b id: 
+                    span {{userToShow.id}}
+                div
+                    b Nick: 
+                    span {{userToShow.username}}
+                div
+                    b Email: 
+                    span {{userToShow.email}}
+                div
+                    b Plaza: 
+                    span {{userToShow.place}}
+                div
+                    b Tipo: 
+                    span {{userToShow.type}}
                 div
                     b Rol: 
                     span {{userToShow.role}}

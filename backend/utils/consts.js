@@ -46,15 +46,19 @@ module.exports = {
             },
 
             "ROLE" : {
-                "IS_IN" : "Role incorrecto"
+                "IS_IN" : "Rol incorrecto"
+            },
+
+            "TYPE" : {
+                "IS_IN" : "Tipo de usuario incorrecto"
             },
 
             "CREATED_AT" : {
-                "IS_DATE" : "Fecha incorrecta"
+                "IS_DATE" : "Fecha de creación incorrecta"
             },
 
             "LAST_MODIFIED" : {
-                "IS_DATE" : "Fecha incorrecta"
+                "IS_DATE" : "Fecha de modificación incorrecta"
             }
         },
     }

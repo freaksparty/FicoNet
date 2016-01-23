@@ -52,6 +52,15 @@ module.exports = function (sequelize, DataTypes) {
             } 
         },
 
+        "type" : {
+            type: DataTypes.ENUM("normal", "stuff", "collaborator"),
+            allowNull    : false, 
+            defaultValue : "normal",
+            validate     : {
+                isIn : { args: [["normal", "stuff", "collaborator"]], msg: consts.VALIDATES.USER.TYPE.IS_IN }
+            } 
+        },
+
         "created_at" : { 
             type      : DataTypes.DATE, 
             allowNull : false,

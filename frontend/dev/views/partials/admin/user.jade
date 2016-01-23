@@ -71,6 +71,19 @@ div(data-ng-switch="pageState")
                             required
                         )
 
+                .form-group(data-ng-class="{'has-error': userForm.type.$invalid && userForm.type.$dirty, \
+                                            'has-success': userForm.type.$valid && userForm.type.$dirty}")
+                    .input-group
+                        span.input-group-addon Tipo
+                        select.form-control(
+                            name = 'type',
+                            data-ng-init="user.type || user.type  = types[0]"
+                            data-ng-model="user.type"
+                            data-ng-options="type for type in types",
+                            data-ng-disabled = 'modifying',
+                            required
+                        )
+
                 .form-group.text-center(data-ng-if="!create")
                     button.btn.btn-warning(
                         type='submit', 
