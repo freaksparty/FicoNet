@@ -10,11 +10,12 @@
                     .input-group
                         span.input-group-addon: span.fa.fa-fw.fa-envelope
                         input.form-control(
-                            type='email', 
+                            type='text', 
                             name='email', 
-                            placeholder="email", 
+                            placeholder="Usuario o email", 
                             data-ng-model="login.data.email", 
                             data-ng-disabled="login.logging",
+                            data-ng-minlength = '3'
                             required
                         )
 
@@ -24,7 +25,7 @@
                         input.form-control(
                             type='password', 
                             name='password', 
-                            placeholder="Password", 
+                            placeholder="Contraseña", 
                             data-ng-model="login.data.password", 
                             data-ng-disabled="login.logging", 
                             data-ng-minlength = '6',

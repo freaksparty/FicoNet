@@ -21,11 +21,14 @@ module.exports = function (passport) {
     passport.use("local-login", new LocalStrategy({
         usernameField : "email",
         passwordField : "password"
-    }, function (email, password, done) {
+    }, function (login, password, done) {
         process.nextTick(function () {
             db.User.find({
                 where: {
-                    email   : email,
+                    $or : {
+                        email    : login,
+                        username : login
+                    },
                     deleted : false
                 }
             }, {raw: true}).then(function (user) {
