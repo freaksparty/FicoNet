@@ -16,6 +16,22 @@ module.exports = {
         "FORBIDDEN"       : "La acción está prohibida"
     },
 
+    'VALIDATION_ERROR' : {
+        "NAME"        : 'SequelizeValidationError',
+        "UNIQUE_NAME" : 'SequelizeUniqueConstraintError',
+        "TYPES" : {
+            "NOT_NULL"  : {
+                "NAME": "notNull Violation",
+                "DESCRIPTION": "No puede estar vacío"
+            },
+            "DUPLICATE" : {
+                "NAME": "unique violation",
+                "DESCRIPTION": "Ya existe"
+            },
+        }
+
+    },
+
     "SUCCESS" : {
         "LOGOUT" : "Logout correcto",
         "INSERTS" : "Creados correctamente"

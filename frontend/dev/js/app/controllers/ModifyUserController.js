@@ -1,6 +1,7 @@
 FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'UserServ', 
     function($scope, $routeParams, $modal, UserServ) {
-        var userId = $routeParams.id;
+        var userId = $routeParams.id,
+            createToastError;
 
         if(userId == 'create') {
             $scope.create = true;
@@ -24,13 +25,37 @@ FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'UserS
 
         $scope.newrole = {};
 
+
+        createToastError = function (title, error) {
+            var errorTemplate = $("<ul>");
+
+            if(typeof error !== "object") {
+                toastr.error(error, title);
+                return;
+            }
+
+            for(var i in error) {
+                var err = error[i];
+
+                errorTemplate.append(
+                    $("<li>")
+                        .append($("<b>").text(err.path + ": "))
+                        .append($("<span>").text(err.message))
+                );
+
+            }
+
+            toastr.error(errorTemplate.html(), title);
+        };
+
+
         $scope.getUser = function () {
             $scope.pageState = $scope.LOADING;
 
             UserServ.get({id: userId}, function (user) {
                 $scope.user         = user;
                 $scope.newrole.role = user.role;
-                $scope.pageState    =  $scope.SUCCESS;
+                $scope.pageState    = $scope.SUCCESS;
             }, function (err) {
                 $scope.pageState = $scope.ERROR;
             });
@@ -40,7 +65,6 @@ FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'UserS
             $scope.creating = true;
 
             UserServ.save($scope.user, function (user) {
-                console.log(user);
                 $scope.user = user;
                 $scope.creating = false;
                 $scope.create = false;
@@ -49,7 +73,7 @@ FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'UserS
                 toastr.success("Usuario creado", user.username);
             }, function (err) {
                 $scope.creating = false;
-                toastr.error(JSON.stringify(err.data), "Error creando usuario");
+                createToastError("Error creando usuario", err.data);
             });
         };
 
@@ -62,7 +86,7 @@ FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'UserS
                 toastr.success("Usuario modificado", user.username);
             }, function (err) {
                 $scope.modifying = false;
-                toastr.error(err.data, "Error modificando usuario");
+                createToastError("Error modificando usuario", err.data);
             });
         };
 

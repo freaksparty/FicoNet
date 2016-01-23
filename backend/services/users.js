@@ -3,7 +3,7 @@ var db         = require("../models"),
     consts     = require("../utils/consts"),
     authconfig = require("../config/auth.js"),
     errors     = require("./errors/errors.js"),
-    makePassword, makeHash, changePassword, sendEmail, model, User;
+    makePassword, makeHash, changePassword, sendEmail, checkBadRequestError, model, User;
 
 User = db.User;
 
@@ -23,6 +23,27 @@ sendEmail = function (email, host, newpassword, end) {
             "Acceda al siguiente enlace para cambiar la contraseña: <a href='http://"+host+"/changepassword/"+newpassword+"'>Cambiar contraseña</a><br>Consulte con alguien de la organización si tiene algún problema", 
             end);
     }, end);
+};
+
+checkBadRequestError = function (error, done) {
+    if(!error || !error.name || (error.name !== consts.VALIDATION_ERROR.NAME 
+        && error.name !== consts.VALIDATION_ERROR.UNIQUE_NAME)) {
+        return false;
+    }
+
+    for(i in error.errors) {
+        var e = error.errors[i];
+
+        if(e.type === consts.VALIDATION_ERROR.TYPES.NOT_NULL.NAME) {
+            e.message = consts.VALIDATION_ERROR.TYPES.NOT_NULL.DESCRIPTION;
+        } else if (e.type === consts.VALIDATION_ERROR.TYPES.DUPLICATE.NAME) {
+            e.message = consts.VALIDATION_ERROR.TYPES.DUPLICATE.DESCRIPTION;
+        }
+    }
+
+    done(400, error.errors)
+
+    return true;
 };
 
 module.exports = {
@@ -46,8 +67,9 @@ module.exports = {
 
             return done(200, user.dataValues);
         }).catch(function (error) {
-            console.log(error);
-            return done(500, consts.ERROR.UNKNOWN);
+            if(!checkBadRequestError (error, done)) {
+                return done(500, consts.ERROR.UNKNOWN);
+            }
         });
     },
 
@@ -80,15 +102,16 @@ module.exports = {
                 delete user.dataValues.deleted;
 
                 return done(200, user.dataValues);
-            }).catch(function (error) {
-                return done(500, consts.ERROR.UNKNOWN);
+            }).catch(function (err) {
+                if(!checkBadRequestError (err, done)) {
+                    return done(500, consts.ERROR.UNKNOWN);
+                }
             });
         }).catch(errors.ElementNotFoundError, function (err) {
             return done(404, consts.ERROR.NOT_FOUND); 
         }).catch(errors.ForbiddenActionError, function (err) {
             return done(403, consts.ERROR.FORBIDDEN); 
         }).catch(function (err) {
-            console.log(err);
             return done(500, consts.ERROR.UNKNOWN);
         });
     },
