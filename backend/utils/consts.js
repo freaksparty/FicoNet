@@ -59,6 +59,7 @@ module.exports = {
 
             "PLACE" : {
                  "NOT_EMPTY" : "La plaza no puede estar vacía",
+                 "MIN"       : "La plaza debe de ser mayor o igual a 1"
             },
 
             "ROLE" : {

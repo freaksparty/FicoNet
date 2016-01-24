@@ -40,6 +40,7 @@ module.exports = function (sequelize, DataTypes) {
             unique    : true,
             validate  : {
                 notEmpty : { args: true, msg: consts.VALIDATES.USER.PLACE.NOT_EMPTY },
+                min      : { args: 1,    msg: consts.VALIDATES.USER.PLACE.MIN }
             }
         },
 
