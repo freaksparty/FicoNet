@@ -115,3 +115,34 @@ body {
 		}
 	}
 }
+
+
+@keyframes loading-animation {
+	from { opacity: 1   }
+	to   { opacity: 0.5 }
+}
+
+.loading {
+	width      : 100%;
+	text-align : center;
+
+	.loading-img {
+		min-height : 50px;
+		max-height : 100px;
+		min-width  : 50px;
+		max-width  : 100px;
+		display    : block;
+		margin     : auto;
+
+		animation-name            : loading-animation;
+		animation-duration        : 0.5s;
+		animation-iteration-count : infinite;
+		animation-direction       : alternate;
+	}
+
+	.loading-text {
+		font-size  : 1.1em;
+		margin-top : 1.1em;
+		display    : block;
+	}
+}

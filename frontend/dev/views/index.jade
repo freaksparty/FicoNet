@@ -24,7 +24,9 @@ html
             span.text-danger Error cargando datos!!
 
         script(type="text/ng-template", id="pageLoading.html")
-            span Cargando datos...
+            div.loading
+                img.loading-img(src="static/img/meteor.png")
+                span.loading-text Cargando datos...
             
         script.
             angular.bootstrap(document, ['FICONET']);
