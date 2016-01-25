@@ -3,6 +3,7 @@ var db         = require("../models"),
     consts     = require("../utils/consts"),
     authconfig = require("../config/auth.js"),
     errors     = require("./errors/errors.js"),
+    helper     = require("./helpers/general.js"),
     makePassword, makeHash, changePassword, sendEmail, checkBadRequestError, model, User;
 
 User = db.User;
@@ -25,27 +26,6 @@ sendEmail = function (email, host, newpassword, end) {
     }, end);
 };
 
-checkBadRequestError = function (error, done) {
-    if(!error || !error.name || (error.name !== consts.VALIDATION_ERROR.NAME 
-        && error.name !== consts.VALIDATION_ERROR.UNIQUE_NAME)) {
-        return false;
-    }
-
-    for(i in error.errors) {
-        var e = error.errors[i];
-
-        if(e.type === consts.VALIDATION_ERROR.TYPES.NOT_NULL.NAME) {
-            e.message = consts.VALIDATION_ERROR.TYPES.NOT_NULL.DESCRIPTION;
-        } else if (e.type === consts.VALIDATION_ERROR.TYPES.DUPLICATE.NAME) {
-            e.message = consts.VALIDATION_ERROR.TYPES.DUPLICATE.DESCRIPTION;
-        }
-    }
-
-    done(400, error.errors)
-
-    return true;
-};
-
 module.exports = {
     createUser: function (data, done) {
         var now   = new Date(),
@@ -53,33 +33,23 @@ module.exports = {
 
         data.created_at    = now;
         data.last_modified = now;
-        data.password      = makePassword(data.password)
+        data.password      = makePassword(data.password);
 
-        User.create(data, {
+        helper.create(User, data, {
             raw    : true,
             fields : attrs 
-        }).then(function (user) {
-            if(!user) { throw new Error(); }
-
+        }, function (user) {
             delete user.dataValues.password;
             delete user.dataValues.newpassword;
             delete user.dataValues.deleted;
-
-            return done(200, user.dataValues);
-        }).catch(function (error) {
-            if(!checkBadRequestError (error, done)) {
-                return done(500, consts.ERROR.UNKNOWN);
-            }
-        });
+        }, null, done);
     },
 
 
     updateUser : function (id, roleChanged, data, done) {
-        User.findOne({
+        helper.update(User, data, {
             where : utils.makeBaseWhere({id: id}, false),
-        }).then(function (user) {
-            if(!user) { throw new errors.ElementNotFoundError() }
-
+        }, function (user) {
             delete data.id;
             delete data.password;
             delete data.created_at;
@@ -93,78 +63,29 @@ module.exports = {
             }
 
             data.last_modified = new Date();
-
-            user.update(data).then(function (user) {
-                if(!user) { throw new Error(); }
-
-                delete user.dataValues.password;
-                delete user.dataValues.newpassword;
-                delete user.dataValues.deleted;
-
-                return done(200, user.dataValues);
-            }).catch(function (err) {
-                if(!checkBadRequestError (err, done)) {
-                    return done(500, consts.ERROR.UNKNOWN);
-                }
-            });
-        }).catch(errors.ElementNotFoundError, function (err) {
-            return done(404, consts.ERROR.NOT_FOUND); 
-        }).catch(errors.ForbiddenActionError, function (err) {
-            return done(403, consts.ERROR.FORBIDDEN); 
-        }).catch(function (err) {
-            return done(500, consts.ERROR.UNKNOWN);
-        });
+        }, function (user) {
+            delete user.dataValues.password;
+            delete user.dataValues.newpassword;
+            delete user.dataValues.deleted;
+        }, null, done);
     },
 
 
     removeUser : function (id, done) {
-        User.findOne({
+        helper.remove(User, {
             where : utils.makeBaseWhere({id: id}, false),
-        }).then(function (user) {
-            if(!user)               { throw new errors.ElementNotFoundError() }
+        }, function (user) {
             if(user.role === "god") { throw new errors.ForbiddenActionError() }
-
-            user.update({
-                deleted: true,
-                last_modified : new Date()
-            }).then(function (user) {
-                if(!user) { throw new Error(); }
-
-                return done(200, "OK");
-            }).catch(function (error) {
-                return done(500, consts.ERROR.UNKNOWN);
-            });
-        }).catch(errors.ElementNotFoundError, function (err) {
-            return done(404, consts.ERROR.NOT_FOUND); 
-        }).catch(errors.ForbiddenActionError, function (err) {
-            return done(403, consts.ERROR.FORBIDDEN); 
-        }).catch(function (err) {
-            return done(500, consts.ERROR.UNKNOWN);
-        });
+        }, null, null, done);
     },
 
 
     hardRemoveUser : function (id, done) {
-        User.findOne({
+        helper.hardRemove(User, {
             where : utils.makeBaseWhere({id: id}, true, true),
-        }).then(function (user) {
-            if(!user)               { throw new errors.ElementNotFoundError() }
+        }, function (user) {
             if(user.role === "god") { throw new errors.ForbiddenActionError() }
-
-            user.destroy().then(function (user) {
-                if(!user) { throw new Error(); }
-
-                return done(200, "OK");
-            }).catch(function (error) {
-                return done(500, consts.ERROR.UNKNOWN);
-            });
-        }).catch(errors.ElementNotFoundError, function (err) {
-            return done(404, consts.ERROR.NOT_FOUND); 
-        }).catch(errors.ForbiddenActionError, function (err) {
-            return done(403, consts.ERROR.FORBIDDEN); 
-        }).catch(function (err) {
-            return done(500, consts.ERROR.UNKNOWN);
-        });
+        }, null, done);
     },
 
     generateNewPasswordHash : function (email, host, done) {
