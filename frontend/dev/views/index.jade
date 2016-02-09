@@ -21,7 +21,9 @@ html
         .container(data-ng-view)
         
         script(type="text/ng-template", id="pageLoadingError.html")
-            span.text-danger Error cargando datos!!
+            div.error
+                img.error-img(src="static/img/meteor_red.png")
+                span.error-text Error cargando datos.
 
         script(type="text/ng-template", id="pageLoading.html")
             div.loading

@@ -8412,4 +8412,22 @@ body::after {
   margin-top: 1.1em;
   display: block;
 }
+.error {
+  width: 100%;
+  text-align: center;
+  color: #F00;
+}
+.error .error-img {
+  min-height: 50px;
+  max-height: 100px;
+  min-width: 50px;
+  max-width: 100px;
+  display: block;
+  margin: auto;
+}
+.error .error-text {
+  font-size: 1.1em;
+  margin-top: 1.1em;
+  display: block;
+}
 /*# sourceMappingURL=styles.css.map */
