@@ -23,8 +23,8 @@ checkBadRequestError = function (error, done) {
     return true;
 };
 
-crashfn = function (error, done) {
-    if(error && error()) {
+crashfn = function (error, data, done) {
+    if(error && error(err)) {
         return;
     } else if(!checkBadRequestError (error, done)) {
         return done(500, consts.ERROR.UNKNOWN);
@@ -40,15 +40,29 @@ module.exports = {
 
             return done(200, result.dataValues);
         }).catch(function (err) {
-            crashfn(err, done);
+            crashfn(error, err, done);
         });
     },
 
-    update: function (model, data, options, searchfn, updatefn, error, done) {
+    update : function (model, data, options, successfn, error, done) {
+        model.update(data, options).spread(function (count) {
+            if (count != 1) { throw new errors.ElementNotFoundError() }
+
+            return success && success(count) || done(200, "OK");
+        }).catch(function (err) {
+            crashfn(error, err, done);
+        });
+    },
+
+    findAndUpdate: function (model, data, options, searchfn, updatefn, error, done) {
         model.findOne(options).then(function (result) {
             if(!result) { throw new errors.ElementNotFoundError() }
 
             searchfn && searchfn(result);
+
+            if(data) {
+                data.last_modified = new Date();
+            }
 
             result.update(data).then(function (updateResult) {
                 if(!updateResult) { throw new Error(); }
@@ -57,22 +71,21 @@ module.exports = {
 
                 return done(200, updateResult.dataValues);
             }).catch(function (err) {
-                crashfn(err, done);
+                crashfn(error, err, done);
             });
         }).catch(errors.ElementNotFoundError, function (err) {
             return done(404, consts.ERROR.NOT_FOUND); 
         }).catch(errors.ForbiddenActionError, function (err) {
             return done(403, consts.ERROR.FORBIDDEN); 
         }).catch(function (err) {
-            return done(500, consts.ERROR.UNKNOWN);
+            crashfn(error, err, done);
         });
     },
 
     remove: function (model, options, searchfn, updatefn, error, done) {
-        this.update(model, {
-            deleted: true,
-            last_modified : new Date()
-        }, searchfn, updatefn, error, done);
+        this.findAndUpdate(model, {
+            deleted: true
+        }, options, searchfn, updatefn, error, done);
     },
 
     hardRemove :  function (model, options, searchfn, error, done) {
@@ -86,14 +99,38 @@ module.exports = {
 
                 return done(200, "OK");
             }).catch(function (err) {
-                return (error && error(err)) ||done(500, consts.ERROR.UNKNOWN);
+                crashfn(error, err, done);
             });
         }).catch(errors.ElementNotFoundError, function (err) {
             return done(404, consts.ERROR.NOT_FOUND); 
         }).catch(errors.ForbiddenActionError, function (err) {
             return done(403, consts.ERROR.FORBIDDEN); 
         }).catch(function (err) {
-            return done(500, consts.ERROR.UNKNOWN);
+            crashfn(error, err, done);
+        });
+    },
+
+    getById : function (model, id, options, successfn, error, done) {
+        model.findById(id, options).then(function (result) {
+            if(!result) { throw new errors.ElementNotFoundError() }
+
+            successfn && successfn(result);
+
+            return done(200, result);
+        }).catch(errors.ElementNotFoundError, function (err) {
+            return done(404, consts.ERROR.NOT_FOUND); 
+        }).catch(function (err) {
+            crashfn(error, err, done);
+        });
+    },
+
+    getAll : function (model, options, successfn, error, done) {
+        model.findAll(options).then(function (result) {
+            successfn && successfn(result);
+
+            return done(200, result);
+        }).catch(function (err) {
+            crashfn(error, err, done);
         });
     }
 }
