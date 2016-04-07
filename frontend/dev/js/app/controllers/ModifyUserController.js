@@ -1,5 +1,5 @@
-FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'UserServ', 
-    function($scope, $routeParams, $modal, UserServ) {
+FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'Upload', 'UserServ', 
+    function($scope, $routeParams, $modal, Upload, UserServ) {
         var userId = $routeParams.id,
             createToastError;
 
@@ -24,6 +24,8 @@ FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'UserS
         $scope.types = ["normal", "stuff", "collaborator"];
 
         $scope.newrole = {};
+
+        $scope.avatar = null;
 
 
         createToastError = function (title, error) {
@@ -75,6 +77,31 @@ FICONET.controller("ModifyUserCtrl", ['$scope', '$routeParams', '$modal', 'UserS
                 $scope.creating = false;
                 createToastError("Error creando usuario", err.data);
             });
+        };
+
+        $scope.addFile = function (file) {
+            $scope.avatar = file;
+            console.log(file);
+        };
+
+        $scope.updateAvatar = function () {
+            $scope.modifying = true;
+
+            console.log("Avatar: " + $scope.avatar);
+            
+            Upload.upload({
+                url  : '/api/profile/avatar',
+                data : { file: $scope.avatar }
+            }).then(function (res) {
+                $scope.modifying = false;
+            }, function (err) {
+                $scope.modifying = false;
+                createToastError("Error actualizando avatar", err.statusText);
+            }, function (evt) {
+
+            });
+            
+            $scope.modifying = false;
         };
 
         $scope.updateUser = function () {

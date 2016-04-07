@@ -1,6 +1,6 @@
 "use strict";
 
-var FICONET = angular.module("FICONET", ['ngResource', 'ngRoute', 'ngCookies', 'ui.bootstrap']);
+var FICONET = angular.module("FICONET", ['ngResource', 'ngRoute', 'ngCookies', 'ui.bootstrap', 'ngFileUpload']);
 
 FICONET.constant("API_BASE_URI", "api/");
 

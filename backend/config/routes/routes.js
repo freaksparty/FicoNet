@@ -96,6 +96,14 @@ module.exports = {
             controller  : "api.users.hardDeleteUser" 
         }
     ],
+
+    "/api/profile/avatar" : [
+        {
+            method      : "post", 
+            middlewares : ["auth.isAuthenticated", "upload.uploadAvatar", "upload.manageAvatar"], 
+            controller  : "api.profile.uploadAvatar" 
+        }
+    ],
     
     "/partials/admin/:view" : [
         { 

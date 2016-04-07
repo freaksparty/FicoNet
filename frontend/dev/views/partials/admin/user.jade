@@ -10,6 +10,38 @@ div(data-ng-switch="pageState")
         h1.text-center(data-ng-if="!create") {{user.username}}
         h1.text-center(data-ng-if="create") Crear usuario
 
+        form.form-horizontal(name='avatarForm', enctype='multipart/form-data', data-ng-if="!create")
+            fieldset
+                legend.text-center Avatar
+
+                <img data-ngf-thumbnail="avatar">
+
+                .form-group(data-ng-class="{'has-error': avatarForm.avatar.$invalid && avatarForm.avatar.$dirty, \
+                                            'has-success': avatarForm.avatar.$valid && avatarForm.avatar.$dirty}")
+                    .input-group
+                        span.input-group-addon Avatar
+                        input.form-control(
+                            type='file', 
+                            name='avatar',
+                            accept="'image/*",
+                            data-ngf-select="addFile($file)",
+                            data-ngf-pattern="'image/*'",
+                            data-ngf-accept="'image/*'",
+                            data-ngf-resize="{width: 100, height: 100}",
+                            data-ng-model="avatar",
+                            data-ng-disabled='modifying',
+                            required
+                        )
+
+                .form-group.text-center
+                    button.btn.btn-warning(
+                        type='submit', 
+                        data-ng-disabled='avatarForm.$invalid || modifying', 
+                        data-ng-click="updateAvatar()"
+                    )
+                        span.fa.fa-circle-o-notch.fa-spin(data-ng-if="modifying")
+                        span(data-ng-if="!modifying") Cambiar
+
         form.form-horizontal(name='userForm')
             fieldset
 
